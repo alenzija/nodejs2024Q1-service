@@ -4,8 +4,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpException,
-  HttpStatus,
   Param,
   ParseUUIDPipe,
   Post,
@@ -24,16 +22,16 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get()
-  async getUsers(): Promise<User[]> {
+  async getAll(): Promise<User[]> {
     return this.userService.getAll();
   }
 
   @Get(':uuid')
-  async getUniqueUser(
+  async getById(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<User | null> {
-    return this.userService.getUnique(uuid);
+    return this.userService.getById(uuid);
   }
 
   @Post()
@@ -42,21 +40,8 @@ export class UserController {
     status: 201,
     description: 'The user has been successfully created.',
   })
-  async createUser(
-    @Body(
-      new ValidationPipe({
-        stopAtFirstError: true,
-        exceptionFactory: (errors) => {
-          return new HttpException(
-            {
-              statusCode: 404,
-              message: Object.values(errors[0].constraints)[0],
-            },
-            HttpStatus.NOT_FOUND,
-          );
-        },
-      }),
-    )
+  async create(
+    @Body(new ValidationPipe())
     createUserDto: CreateUserDto,
   ) {
     return this.userService.create(createUserDto);
@@ -69,23 +54,10 @@ export class UserController {
     status: 200,
     description: 'The user has been successfully updated.',
   })
-  async updateUser(
+  async update(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
-    @Body(
-      new ValidationPipe({
-        stopAtFirstError: true,
-        exceptionFactory: (errors) => {
-          return new HttpException(
-            {
-              statusCode: 404,
-              message: Object.values(errors[0].constraints)[0],
-            },
-            HttpStatus.NOT_FOUND,
-          );
-        },
-      }),
-    )
+    @Body(new ValidationPipe())
     updateUserDto: UpdateUserDto,
   ) {
     return this.userService.update({ id: uuid, body: updateUserDto });
@@ -98,7 +70,7 @@ export class UserController {
     status: 204,
     description: 'The user has been successfully deleted.',
   })
-  async deleteUser(
+  async delete(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<void> {

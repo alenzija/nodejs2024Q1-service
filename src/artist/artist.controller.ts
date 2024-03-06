@@ -11,28 +11,26 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ArtistService } from './artist.service';
+import { Artist } from './interfaces/artist.interface';
+import { ArtistDto } from './dto/artist.dto';
 
-import { TrackService } from './track.service';
-
-import { Track } from './interfaces/track.interface';
-import { TrackDto } from './dto/track.dto';
-
-@ApiTags('Track controller')
-@Controller('track')
-export class TrackController {
-  constructor(private trackService: TrackService) {}
+@ApiTags('Artist controller')
+@Controller('artist')
+export class ArtistController {
+  constructor(private artistService: ArtistService) {}
 
   @Get()
-  async getAll(): Promise<Track[]> {
-    return this.trackService.getAll();
+  async getAll(): Promise<Artist[]> {
+    return this.artistService.getAll();
   }
 
   @Get(':uuid')
   async getUnique(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
-  ): Promise<Track> {
-    return this.trackService.getUnique(uuid);
+  ): Promise<Artist> {
+    return this.artistService.getUnique(uuid);
   }
 
   @Post()
@@ -43,9 +41,9 @@ export class TrackController {
   })
   async create(
     @Body(new ValidationPipe())
-    trackDto: TrackDto,
+    artistDto: ArtistDto,
   ) {
-    return this.trackService.create(trackDto);
+    return this.artistService.create(artistDto);
   }
 
   @Put(':uuid')
@@ -59,9 +57,9 @@ export class TrackController {
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
     @Body(new ValidationPipe())
-    trackDto: TrackDto,
+    artistDto: ArtistDto,
   ) {
-    return this.trackService.update({ id: uuid, body: trackDto });
+    return this.artistService.update({ id: uuid, body: artistDto });
   }
 
   @Delete(':uuid')
@@ -75,6 +73,6 @@ export class TrackController {
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<void> {
-    return this.trackService.delete(uuid);
+    return this.artistService.delete(uuid);
   }
 }

@@ -9,11 +9,11 @@ import { User } from 'src/user/interfaces/user.interface';
 export class UserService {
   private users: User[] = [];
 
-  getAll(): User[] {
-    return this.users;
+  async getAll(): Promise<User[]> {
+    return this.users.map((user) => ({ ...user, password: '******' }));
   }
 
-  getUnique(id: string): User {
+  async getById(id: string): Promise<User> {
     const user = this.users.find((user) => user.id === id);
     if (!user) {
       throw new HttpException(
@@ -27,16 +27,22 @@ export class UserService {
     return user;
   }
 
-  create(user: User): User {
-    if (this.users.some((userItem) => userItem.login === user.login)) {
+  async getByLogin(login: string): Promise<User> {
+    const user = this.users.find((user) => user.login === login);
+    if (!user) {
       throw new HttpException(
         {
-          status: 403,
-          message: 'User with this login is already exist',
+          statusCode: 404,
+          message: "User with this id doesn't exist",
         },
-        HttpStatus.FORBIDDEN,
+        HttpStatus.NOT_FOUND,
       );
     }
+    return user;
+  }
+
+  async create(user: User): Promise<User> {
+    await this.getByLogin(user.login);
     const newUser = {
       id: uuidv4(),
       ...user,
@@ -48,23 +54,14 @@ export class UserService {
     return newUser;
   }
 
-  update({
+  async update({
     id,
     body: { oldPassword, newPassword },
   }: {
     id: string;
     body: UpdatePassword;
-  }): User {
-    const user = this.users.find((user) => user.id === id);
-    if (!user) {
-      throw new HttpException(
-        {
-          status: 404,
-          message: "User with this id doesn't exist",
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
+  }): Promise<User> {
+    const user = await this.getById(id);
     if (user.password !== oldPassword) {
       throw new HttpException(
         {
@@ -90,17 +87,8 @@ export class UserService {
     return user;
   }
 
-  delete(id: string): void {
-    const user = this.users.find((user) => user.id === id);
-    if (!user) {
-      throw new HttpException(
-        {
-          statusCode: 404,
-          message: "User with this id doesn't exist",
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
+  async delete(id: string): Promise<void> {
+    await this.getById(id);
     this.users = this.users.filter((user) => user.id !== id);
   }
 }

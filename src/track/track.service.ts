@@ -11,7 +11,7 @@ export class TrackService {
     return this.tracks;
   }
 
-  getUnique(id: string): Track {
+  async getUnique(id: string): Promise<Track> {
     const track = this.tracks.find((track) => track.id === id);
     if (!track) {
       throw new HttpException(
@@ -25,7 +25,7 @@ export class TrackService {
     return track;
   }
 
-  create(track: Track): Track {
+  async create(track: Track): Promise<Track> {
     const newTrack = {
       id: uuidv4(),
       ...track,
@@ -38,37 +38,19 @@ export class TrackService {
     return newTrack;
   }
 
-  update({ id, body }: { id: string; body: Track }): Track {
-    const user = this.tracks.find((track) => track.id === id);
-    if (!user) {
-      throw new HttpException(
-        {
-          status: 404,
-          message: "Track with this id doesn't exist",
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
+  async update({ id, body }: { id: string; body: Track }): Promise<Track> {
+    const track = await this.getUnique(id);
     Object.keys(body).forEach((key) => {
       if (body[key]) {
-        user[key] = body[key];
+        track[key] = body[key];
       }
     });
 
-    return user;
+    return track;
   }
 
-  delete(id: string): void {
-    const track = this.tracks.find((track) => track.id === id);
-    if (!track) {
-      throw new HttpException(
-        {
-          statusCode: 404,
-          message: "Track with this id doesn't exist",
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
+  async delete(id: string): Promise<void> {
+    await this.getUnique(id);
     this.tracks = this.tracks.filter((track) => track.id !== id);
   }
 }
