@@ -5,7 +5,7 @@ import { UpdatePassword } from './interfaces/updatePassword.interface';
 
 @Injectable()
 export class UserService {
-  private readonly users: User[] = [];
+  private users: User[] = [];
 
   getAll(): User[] {
     return this.users;
@@ -77,5 +77,19 @@ export class UserService {
     user.updatedAt = Date.now();
 
     return user;
+  }
+
+  delete(id: string): void {
+    const user = this.users.find((user) => user.id === id);
+    if (!user) {
+      throw new HttpException(
+        {
+          statusCode: 404,
+          message: "User with this id doesn't exist",
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    this.users = this.users.filter((user) => user.id !== id);
   }
 }
