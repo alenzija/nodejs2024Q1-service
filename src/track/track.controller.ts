@@ -12,37 +12,38 @@ import {
   Put,
   ValidationPipe,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { User } from 'src/user/interfaces/user.interface';
-import { CreateUserDto } from './dto/create-user.dto';
 import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UpdateUserDto } from './dto/update-user.dto';
 
-@ApiTags('User controller')
-@Controller('user')
-export class UserController {
-  constructor(private userService: UserService) {}
+import { TrackService } from './track.service';
+
+import { Track } from './interfaces/track.interface';
+import { TrackDto } from './dto/track.dto';
+
+@ApiTags('Track controller')
+@Controller('track')
+export class TrackController {
+  constructor(private trackService: TrackService) {}
 
   @Get()
-  async getUsers(): Promise<User[]> {
-    return this.userService.getAll();
+  async getTracks(): Promise<Track[]> {
+    return this.trackService.getAll();
   }
 
   @Get(':uuid')
-  async getUniqueUser(
+  async getUniqueTrack(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
-  ): Promise<User | null> {
-    return this.userService.getUnique(uuid);
+  ): Promise<Track> {
+    return this.trackService.getUnique(uuid);
   }
 
   @Post()
   @ApiConsumes('application/json')
   @ApiResponse({
     status: 201,
-    description: 'The user has been successfully created.',
+    description: 'The track has been successfully created.',
   })
-  async createUser(
+  async createTrack(
     @Body(
       new ValidationPipe({
         stopAtFirstError: true,
@@ -57,19 +58,19 @@ export class UserController {
         },
       }),
     )
-    createUserDto: CreateUserDto,
+    trackDto: TrackDto,
   ) {
-    return this.userService.create(createUserDto);
+    return this.trackService.create(trackDto);
   }
 
   @Put(':uuid')
-  @ApiConsumes('application/json')
   @HttpCode(200)
+  @ApiConsumes('application/json')
   @ApiResponse({
     status: 200,
-    description: 'The user has been successfully updated.',
+    description: 'The track has been successfully updated.',
   })
-  async updateUser(
+  async updateTrack(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
     @Body(
@@ -86,22 +87,22 @@ export class UserController {
         },
       }),
     )
-    updateUserDto: UpdateUserDto,
+    trackDto: TrackDto,
   ) {
-    return this.userService.update({ id: uuid, body: updateUserDto });
+    return this.trackService.update({ id: uuid, body: trackDto });
   }
 
   @Delete(':uuid')
-  @ApiConsumes('application/json')
   @HttpCode(204)
+  @ApiConsumes('application/json')
   @ApiResponse({
     status: 204,
-    description: 'The user has been successfully deleted.',
+    description: 'The track has been successfully deleted.',
   })
   async deleteUser(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<void> {
-    return this.userService.delete(uuid);
+    return this.trackService.delete(uuid);
   }
 }

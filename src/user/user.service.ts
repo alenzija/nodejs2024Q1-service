@@ -1,7 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { User } from 'src/user/interfaces/user.interface';
+
 import { v4 as uuidv4 } from 'uuid';
+
 import { UpdatePassword } from './interfaces/updatePassword.interface';
+import { User } from 'src/user/interfaces/user.interface';
 
 @Injectable()
 export class UserService {
@@ -11,7 +13,7 @@ export class UserService {
     return this.users;
   }
 
-  getUnique(id: string): User | null {
+  getUnique(id: string): User {
     const user = this.users.find((user) => user.id === id);
     if (!user) {
       throw new HttpException(
@@ -26,6 +28,15 @@ export class UserService {
   }
 
   create(user: User): User {
+    if (this.users.some((userItem) => userItem.login === user.login)) {
+      throw new HttpException(
+        {
+          status: 403,
+          message: 'User with this login is already exist',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
     const newUser = {
       id: uuidv4(),
       ...user,
