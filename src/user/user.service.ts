@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -18,7 +23,7 @@ export class UserService {
     if (!user) {
       throw new HttpException(
         {
-          statusCode: 404,
+          statusCode: 400,
           message: "User with this id doesn't exist",
         },
         HttpStatus.NOT_FOUND,
@@ -29,20 +34,17 @@ export class UserService {
 
   async getByLogin(login: string): Promise<User> {
     const user = this.users.find((user) => user.login === login);
-    if (!user) {
-      throw new HttpException(
-        {
-          statusCode: 404,
-          message: "User with this id doesn't exist",
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
     return user;
   }
 
   async create(user: User): Promise<User> {
-    await this.getByLogin(user.login);
+    const currentUser = await this.getByLogin(user.login);
+    if (currentUser) {
+      throw new BadRequestException({
+        statusCode: 400,
+        message: 'User with this login is already exist',
+      });
+    }
     const newUser = {
       id: uuidv4(),
       ...user,
