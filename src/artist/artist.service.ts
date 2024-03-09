@@ -2,17 +2,24 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Artist } from './interfaces/artist.interface';
+import { DbService } from 'src/db/db.service';
+import { AlbumService } from 'src/album/album.service';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class ArtistService {
-  private artists: Artist[] = [];
+  constructor(
+    private db: DbService,
+    private albumService: AlbumService,
+    private trackService: TrackService,
+  ) {}
 
   async getAll() {
-    return this.artists;
+    return this.db.artists;
   }
 
   async getUnique(id: string): Promise<Artist> {
-    const artist = this.artists.find((artist) => artist.id === id);
+    const artist = this.db.artists.find((artist) => artist.id === id);
     if (!artist) {
       throw new HttpException(
         {
@@ -30,7 +37,7 @@ export class ArtistService {
       id: uuidv4(),
       ...artist,
     };
-    this.artists.push(newArtist);
+    this.db.artists.push(newArtist);
     return newArtist;
   }
 
@@ -47,6 +54,8 @@ export class ArtistService {
 
   async delete(id: string): Promise<void> {
     await this.getUnique(id);
-    this.artists = this.artists.filter((artist) => artist.id !== id);
+    this.db.artists = this.db.artists.filter((artist) => artist.id !== id);
+    this.albumService.setArtistIdNull(id);
+    this.trackService.setArtistIdNull(id);
   }
 }

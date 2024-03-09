@@ -2,17 +2,17 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Track } from './interfaces/track.interface';
+import { DbService } from 'src/db/db.service';
 
 @Injectable()
 export class TrackService {
-  private tracks: Track[] = [];
-
+  constructor(private db: DbService) {}
   async getAll() {
-    return this.tracks;
+    return this.db.tracks;
   }
 
   async getUnique(id: string): Promise<Track> {
-    const track = this.tracks.find((track) => track.id === id);
+    const track = this.db.tracks.find((track) => track.id === id);
     if (!track) {
       throw new HttpException(
         {
@@ -34,7 +34,7 @@ export class TrackService {
     newTrack.artistId = newTrack.artistId || null;
     newTrack.albumId = newTrack.albumId || null;
 
-    this.tracks.push(newTrack);
+    this.db.tracks.push(newTrack);
     return newTrack;
   }
 
@@ -51,6 +51,18 @@ export class TrackService {
 
   async delete(id: string): Promise<void> {
     await this.getUnique(id);
-    this.tracks = this.tracks.filter((track) => track.id !== id);
+    this.db.tracks = this.db.tracks.filter((track) => track.id !== id);
+  }
+
+  setArtistIdNull(artistId: string): void {
+    this.db.tracks = this.db.tracks.map((track) =>
+      track.artistId === artistId ? { ...track, artistId: null } : track,
+    );
+  }
+
+  setAlbumIdNull(albumId: string): void {
+    this.db.tracks = this.db.tracks.map((track) =>
+      track.albumId === albumId ? { ...track, albumId: null } : track,
+    );
   }
 }

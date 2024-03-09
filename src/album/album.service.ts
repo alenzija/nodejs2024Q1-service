@@ -2,38 +2,40 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Album } from './interface/album.interface';
+import { DbService } from 'src/db/db.service';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class AlbumService {
-  private albums: Album[] = [];
+  constructor(private db: DbService, private trackService: TrackService) {}
 
   async getAll() {
-    return this.albums;
+    return this.db.albums;
   }
 
   async getUnique(id: string): Promise<Album> {
-    const artist = this.albums.find((album) => album.id === id);
-    if (!artist) {
+    const album = this.db.albums.find((album) => album.id === id);
+    if (!album) {
       throw new HttpException(
         {
           statusCode: 404,
-          message: "Artist with this id doesn't exist",
+          message: "Album with this id doesn't exist",
         },
         HttpStatus.NOT_FOUND,
       );
     }
-    return artist;
+    return album;
   }
 
-  async create(artist: Album): Promise<Album> {
+  async create(album: Album): Promise<Album> {
     const newAlbum = {
       id: uuidv4(),
-      ...artist,
+      ...album,
     };
     if (!newAlbum.artistId) {
       newAlbum.artistId = null;
     }
-    this.albums.push(newAlbum);
+    this.db.albums.push(newAlbum);
     return newAlbum;
   }
 
@@ -50,6 +52,13 @@ export class AlbumService {
 
   async delete(id: string): Promise<void> {
     await this.getUnique(id);
-    this.albums = this.albums.filter((album) => album.id !== id);
+    this.db.albums = this.db.albums.filter((album) => album.id !== id);
+    this.trackService.setAlbumIdNull(id);
+  }
+
+  setArtistIdNull(artistId: string): void {
+    this.db.albums.map((item) =>
+      item.artistId === artistId ? { ...item, artistId: null } : item,
+    );
   }
 }

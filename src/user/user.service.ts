@@ -9,17 +9,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { UpdatePassword } from './interfaces/updatePassword.interface';
 import { User } from 'src/user/interfaces/user.interface';
+import { DbService } from 'src/db/db.service';
 
 @Injectable()
 export class UserService {
-  private users: User[] = [];
+  constructor(private db: DbService) {}
+  // private users: User[] = [];
 
   async getAll(): Promise<User[]> {
-    return this.users.map((user) => ({ ...user, password: '******' }));
+    return this.db.users.map((user) => ({ ...user, password: '******' }));
   }
 
   async getById(id: string): Promise<User> {
-    const user = this.users.find((user) => user.id === id);
+    const user = this.db.users.find((user) => user.id === id);
     if (!user) {
       throw new HttpException(
         {
@@ -33,7 +35,7 @@ export class UserService {
   }
 
   async getByLogin(login: string): Promise<User> {
-    const user = this.users.find((user) => user.login === login);
+    const user = this.db.users.find((user) => user.login === login);
     return user;
   }
 
@@ -52,7 +54,7 @@ export class UserService {
       createdAt: Date.now(),
       updatedAt: null,
     };
-    this.users.push(newUser);
+    this.db.users.push(newUser);
     return newUser;
   }
 
@@ -91,6 +93,6 @@ export class UserService {
 
   async delete(id: string): Promise<void> {
     await this.getById(id);
-    this.users = this.users.filter((user) => user.id !== id);
+    this.db.users = this.db.users.filter((user) => user.id !== id);
   }
 }
