@@ -1,12 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Track } from './interfaces/track.interface';
 import { DbService } from 'src/db/db.service';
+import { ArtistService } from 'src/artist/artist.service';
+import { AlbumService } from 'src/album/album.service';
 
 @Injectable()
 export class TrackService {
-  constructor(private db: DbService) {}
+  constructor(
+    private db: DbService,
+    @Inject(forwardRef(() => ArtistService))
+    private artistService: ArtistService,
+    @Inject(forwardRef(() => AlbumService))
+    private albumService: AlbumService,
+  ) {}
   getAll() {
     return this.db.tracks;
   }
@@ -38,9 +52,23 @@ export class TrackService {
       ...track,
     };
 
-    newTrack.artistId = newTrack.artistId || null;
-    newTrack.albumId = newTrack.albumId || null;
+    if (newTrack.artistId) {
+      this.artistService.getUnique(newTrack.artistId, {
+        statusCode: 422,
+        httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+      });
+    } else {
+      newTrack.artistId = null;
+    }
 
+    if (newTrack.albumId) {
+      this.albumService.getUnique(newTrack.albumId, {
+        statusCode: 422,
+        httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+      });
+    } else {
+      newTrack.albumId = null;
+    }
     this.db.tracks.push(newTrack);
     return newTrack;
   }

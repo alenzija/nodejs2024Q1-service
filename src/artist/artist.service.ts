@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Artist } from './interfaces/artist.interface';
@@ -10,7 +16,9 @@ import { TrackService } from 'src/track/track.service';
 export class ArtistService {
   constructor(
     private db: DbService,
+    @Inject(forwardRef(() => AlbumService))
     private albumService: AlbumService,
+    @Inject(forwardRef(() => TrackService))
     private trackService: TrackService,
   ) {}
 
@@ -51,9 +59,7 @@ export class ArtistService {
   update({ id, body }: { id: string; body: Artist }): Artist {
     const artist = this.getUnique(id);
     Object.keys(body).forEach((key) => {
-      if (body[key]) {
-        artist[key] = body[key];
-      }
+      artist[key] = body[key];
     });
 
     return artist;

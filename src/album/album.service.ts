@@ -4,10 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { Album } from './interface/album.interface';
 import { DbService } from 'src/db/db.service';
 import { TrackService } from 'src/track/track.service';
+import { ArtistService } from 'src/artist/artist.service';
 
 @Injectable()
 export class AlbumService {
-  constructor(private db: DbService, private trackService: TrackService) {}
+  constructor(
+    private db: DbService,
+    private trackService: TrackService,
+    private artistService: ArtistService,
+  ) {}
 
   getAll() {
     return this.db.albums;
@@ -39,9 +44,15 @@ export class AlbumService {
       id: uuidv4(),
       ...album,
     };
-    if (!newAlbum.artistId) {
+    if (newAlbum.artistId) {
+      this.artistService.getUnique(newAlbum.artistId, {
+        statusCode: 422,
+        httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+      });
+    } else {
       newAlbum.artistId = null;
     }
+
     this.db.albums.push(newAlbum);
     return newAlbum;
   }
@@ -67,7 +78,7 @@ export class AlbumService {
   }
 
   setArtistIdNull(artistId: string): void {
-    this.db.albums.map((item) =>
+    this.db.albums = this.db.albums.map((item) =>
       item.artistId === artistId ? { ...item, artistId: null } : item,
     );
   }

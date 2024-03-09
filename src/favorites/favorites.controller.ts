@@ -2,11 +2,12 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FavoritesService } from './favorites.service';
 import { FavoritesResponse } from './interfaces/favoritesResponse.interface';
 
@@ -28,6 +29,12 @@ export class FavoritesController {
   }
 
   @Delete('track/:id')
+  @HttpCode(204)
+  @ApiConsumes('application/json')
+  @ApiResponse({
+    status: 204,
+    description: 'The track has been successfully deleted.',
+  })
   async deleteTrack(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<void> {
@@ -42,6 +49,12 @@ export class FavoritesController {
   }
 
   @Delete('artist/:id')
+  @HttpCode(204)
+  @ApiConsumes('application/json')
+  @ApiResponse({
+    status: 204,
+    description: 'The artist has been successfully deleted.',
+  })
   async deleteArtist(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<void> {
@@ -56,6 +69,12 @@ export class FavoritesController {
   }
 
   @Delete('album/:id')
+  @HttpCode(204)
+  @ApiConsumes('application/json')
+  @ApiResponse({
+    status: 204,
+    description: 'The album has been successfully deleted.',
+  })
   async deleteAlbum(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<void> {

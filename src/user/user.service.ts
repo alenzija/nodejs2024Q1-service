@@ -14,13 +14,16 @@ import { DbService } from 'src/db/db.service';
 @Injectable()
 export class UserService {
   constructor(private db: DbService) {}
-  // private users: User[] = [];
 
-  async getAll(): Promise<User[]> {
-    return this.db.users.map((user) => ({ ...user, password: '******' }));
+  transformToResponseUser(user: User): User {
+    return { ...user, password: undefined };
   }
 
-  async getById(id: string): Promise<User> {
+  getAll(): User[] {
+    return this.db.users.map(this.transformToResponseUser);
+  }
+
+  getById(id: string): User {
     const user = this.db.users.find((user) => user.id === id);
     if (!user) {
       throw new HttpException(
@@ -34,13 +37,13 @@ export class UserService {
     return user;
   }
 
-  async getByLogin(login: string): Promise<User> {
+  getByLogin(login: string): User {
     const user = this.db.users.find((user) => user.login === login);
     return user;
   }
 
-  async create(user: User): Promise<User> {
-    const currentUser = await this.getByLogin(user.login);
+  create(user: User): User {
+    const currentUser = this.getByLogin(user.login);
     if (currentUser) {
       throw new BadRequestException({
         statusCode: 400,
@@ -52,20 +55,21 @@ export class UserService {
       ...user,
       version: 1,
       createdAt: Date.now(),
-      updatedAt: null,
+      updatedAt: Date.now(),
     };
     this.db.users.push(newUser);
-    return newUser;
+
+    return this.transformToResponseUser(newUser);
   }
 
-  async update({
+  update({
     id,
     body: { oldPassword, newPassword },
   }: {
     id: string;
     body: UpdatePassword;
-  }): Promise<User> {
-    const user = await this.getById(id);
+  }): User {
+    const user = this.getById(id);
     if (user.password !== oldPassword) {
       throw new HttpException(
         {
@@ -84,15 +88,16 @@ export class UserService {
         HttpStatus.FORBIDDEN,
       );
     }
+
     user.password = newPassword;
     user.version = user.version + 1;
     user.updatedAt = Date.now();
 
-    return user;
+    return this.transformToResponseUser(user);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.getById(id);
+  delete(id: string): void {
+    this.getById(id);
     this.db.users = this.db.users.filter((user) => user.id !== id);
   }
 }

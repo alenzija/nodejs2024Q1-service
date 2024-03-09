@@ -98,7 +98,7 @@ export class FavoritesService {
   }
 
   addArtist(id: string): void {
-    this.albumService.getUnique(id, {
+    this.artistService.getUnique(id, {
       statusCode: 422,
       httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
     });

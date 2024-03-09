@@ -12,13 +12,16 @@ import { FavoritesModule } from './favorites/favorites.module';
 @Module({
   imports: [
     UserModule,
-    TrackModule,
-    ArtistModule,
-    AlbumModule,
-    DbModule,
+    // TrackModule,
+    // ArtistModule,
+    // AlbumModule,
+    // DbModule,
     FavoritesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, DbService],
+  providers: [
+    AppService,
+    // DbService
+  ],
 })
 export class AppModule {}
