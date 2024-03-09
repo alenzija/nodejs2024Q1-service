@@ -10,12 +10,13 @@ export class DbService {
   artists: Artist[] = [];
   albums: Album[] = [];
   tracks: Track[] = [];
-
-  // getUserAlbums(userId: number): Album[] {
-  //   const user = this.users.find(u => u.id === userId);
-  //   if (!user) {
-  //     return []; // User not found
-  //   }
-  //   return user.albums;
-  // }
+  favorites: {
+    artists: string[];
+    tracks: string[];
+    albums: string[];
+  } = {
+    artists: [],
+    tracks: [],
+    albums: [],
+  };
 }

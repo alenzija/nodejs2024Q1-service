@@ -7,25 +7,32 @@ import { DbService } from 'src/db/db.service';
 @Injectable()
 export class TrackService {
   constructor(private db: DbService) {}
-  async getAll() {
+  getAll() {
     return this.db.tracks;
   }
 
-  async getUnique(id: string): Promise<Track> {
+  getUnique(
+    id: string,
+    error: { statusCode: number; httpStatus: HttpStatus } = {
+      statusCode: 404,
+      httpStatus: HttpStatus.NOT_FOUND,
+    },
+  ): Track {
     const track = this.db.tracks.find((track) => track.id === id);
     if (!track) {
+      const { statusCode, httpStatus } = error;
       throw new HttpException(
         {
-          statusCode: 404,
+          statusCode,
           message: "Track with this id doesn't exist",
         },
-        HttpStatus.NOT_FOUND,
+        httpStatus,
       );
     }
     return track;
   }
 
-  async create(track: Track): Promise<Track> {
+  create(track: Track): Track {
     const newTrack = {
       id: uuidv4(),
       ...track,
@@ -38,8 +45,8 @@ export class TrackService {
     return newTrack;
   }
 
-  async update({ id, body }: { id: string; body: Track }): Promise<Track> {
-    const track = await this.getUnique(id);
+  update({ id, body }: { id: string; body: Track }): Track {
+    const track = this.getUnique(id);
     Object.keys(body).forEach((key) => {
       if (body[key]) {
         track[key] = body[key];
@@ -49,9 +56,12 @@ export class TrackService {
     return track;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.getUnique(id);
+  delete(id: string): void {
+    this.getUnique(id);
     this.db.tracks = this.db.tracks.filter((track) => track.id !== id);
+    this.db.favorites.tracks = this.db.favorites.tracks.filter(
+      (trackId) => trackId !== id,
+    );
   }
 
   setArtistIdNull(artistId: string): void {

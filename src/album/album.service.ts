@@ -9,25 +9,32 @@ import { TrackService } from 'src/track/track.service';
 export class AlbumService {
   constructor(private db: DbService, private trackService: TrackService) {}
 
-  async getAll() {
+  getAll() {
     return this.db.albums;
   }
 
-  async getUnique(id: string): Promise<Album> {
+  getUnique(
+    id: string,
+    error: { statusCode: number; httpStatus: HttpStatus } = {
+      statusCode: 404,
+      httpStatus: HttpStatus.NOT_FOUND,
+    },
+  ): Album {
     const album = this.db.albums.find((album) => album.id === id);
     if (!album) {
+      const { statusCode, httpStatus } = error;
       throw new HttpException(
         {
-          statusCode: 404,
+          statusCode,
           message: "Album with this id doesn't exist",
         },
-        HttpStatus.NOT_FOUND,
+        httpStatus,
       );
     }
     return album;
   }
 
-  async create(album: Album): Promise<Album> {
+  create(album: Album): Album {
     const newAlbum = {
       id: uuidv4(),
       ...album,
@@ -39,7 +46,7 @@ export class AlbumService {
     return newAlbum;
   }
 
-  async update({ id, body }: { id: string; body: Album }): Promise<Album> {
+  update({ id, body }: { id: string; body: Album }): Album {
     const album = this.getUnique(id);
     Object.keys(body).forEach((key) => {
       if (body[key]) {
@@ -50,10 +57,13 @@ export class AlbumService {
     return album;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.getUnique(id);
+  delete(id: string): void {
+    this.getUnique(id);
     this.db.albums = this.db.albums.filter((album) => album.id !== id);
     this.trackService.setAlbumIdNull(id);
+    this.db.favorites.albums = this.db.favorites.albums.filter(
+      (albumId) => albumId !== id,
+    );
   }
 
   setArtistIdNull(artistId: string): void {
