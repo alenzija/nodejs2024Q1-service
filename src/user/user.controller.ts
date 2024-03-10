@@ -22,12 +22,10 @@ import {
 
 import { UserService } from './user.service';
 
-import { User } from 'src/user/interfaces/user.interface';
-
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
-import { UserResponseDto } from './dto/userResponse.dto';
-import { ErrorResponseDto } from 'src/dto/errorResponse.dto';
+import { UserResponse } from './entity/userResponse.entity';
+import { ErrorResponse } from 'src/entity/errorResponse.entity';
 
 @ApiTags('User controller')
 @Controller('user')
@@ -37,31 +35,31 @@ export class UserController {
   @Get()
   @ApiResponse({
     status: 200,
-    type: [UserResponseDto],
+    type: [UserResponse],
   })
-  async getAll(): Promise<User[]> {
+  async getAll(): Promise<UserResponse[]> {
     return this.userService.getAll();
   }
 
   @Get(':uuid')
   @ApiResponse({
     status: 200,
-    type: UserResponseDto,
+    type: UserResponse,
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "The user's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "The user with this id doesn't exist",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async getById(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
-  ): Promise<User | null> {
+  ): Promise<UserResponse | null> {
     return this.userService.getById(uuid);
   }
 
@@ -70,13 +68,13 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   @ApiResponse({
     status: 201,
-    type: UserResponseDto,
+    type: UserResponse,
     description: 'The user has been successfully created.',
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "Body doesn't contain required fields",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async create(
     @Body(new ValidationPipe())
@@ -91,22 +89,22 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully updated.',
-    type: UserResponseDto,
+    type: UserResponse,
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "the user's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "the user with this id doesn't exist",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiForbiddenResponse({
     status: 403,
     description: 'The old password is wrong',
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async update(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -127,12 +125,12 @@ export class UserController {
   @ApiBadRequestResponse({
     status: 400,
     description: "The user's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "The user with this id doesn't exist",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async delete(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))

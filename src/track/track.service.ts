@@ -7,14 +7,16 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Track } from './interfaces/track.interface';
+import { Track } from './entity/track.entity';
 import { DbService } from 'src/db/db.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { AlbumService } from 'src/album/album.service';
+import { TrackDto } from './dto/track.dto';
 
 @Injectable()
 export class TrackService {
   constructor(
+    @Inject(forwardRef(() => DbService))
     private db: DbService,
     @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
@@ -46,7 +48,7 @@ export class TrackService {
     return track;
   }
 
-  create(track: Track): Track {
+  create(track: TrackDto): Track {
     const newTrack = {
       id: uuidv4(),
       ...track,
@@ -73,7 +75,7 @@ export class TrackService {
     return newTrack;
   }
 
-  update({ id, body }: { id: string; body: Track }): Track {
+  update({ id, body }: { id: string; body: TrackDto }): Track {
     const track = this.getUnique(id);
     Object.keys(body).forEach((key) => {
       if (body[key]) {

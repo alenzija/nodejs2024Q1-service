@@ -18,11 +18,11 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+
 import { AlbumService } from './album.service';
-import { Album } from './interface/album.interface';
 import { AlbumDto } from './dto/album.dto';
-import { AlbumResponseDto } from './dto/albumResponse.dto';
-import { ErrorResponseDto } from 'src/dto/errorResponse.dto';
+import { Album } from './entity/album.entity';
+import { ErrorResponse } from 'src/entity/errorResponse.entity';
 
 @ApiTags('Album controller')
 @Controller('album')
@@ -32,7 +32,7 @@ export class AlbumController {
   @Get()
   @ApiResponse({
     status: 200,
-    type: [AlbumResponseDto],
+    type: [Album],
   })
   async getAll(): Promise<Album[]> {
     return this.albumService.getAll();
@@ -41,17 +41,17 @@ export class AlbumController {
   @Get(':uuid')
   @ApiResponse({
     status: 200,
-    type: AlbumResponseDto,
+    type: Album,
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "The album's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "The album with this id doesn't exist",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async getUnique(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -64,18 +64,18 @@ export class AlbumController {
   @ApiConsumes('application/json')
   @ApiResponse({
     status: 201,
-    type: AlbumResponseDto,
+    type: Album,
     description: 'The album has been successfully created.',
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "Body doesn't contain required fields",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiUnprocessableEntityResponse({
     status: 422,
     description: "There aren't any artists with this artistId",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async create(
     @Body(new ValidationPipe())
@@ -89,23 +89,23 @@ export class AlbumController {
   @ApiConsumes('application/json')
   @ApiResponse({
     status: 200,
-    type: AlbumResponseDto,
+    type: Album,
     description: 'The album has been successfully updated.',
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "The albums's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "There aren't any albums with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiUnprocessableEntityResponse({
     status: 422,
     description: "There aren't any artists with this artistId",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async update(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -126,12 +126,12 @@ export class AlbumController {
   @ApiBadRequestResponse({
     status: 400,
     description: "The albums's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "There aren't any albums with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async delete(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))

@@ -7,14 +7,16 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Artist } from './interfaces/artist.interface';
+import { Artist } from './entity/artist.entity';
 import { DbService } from 'src/db/db.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
+import { ArtistDto } from './dto/artist.dto';
 
 @Injectable()
 export class ArtistService {
   constructor(
+    @Inject(forwardRef(() => DbService))
     private db: DbService,
     @Inject(forwardRef(() => AlbumService))
     private albumService: AlbumService,
@@ -47,7 +49,7 @@ export class ArtistService {
     return artist;
   }
 
-  create(artist: Artist): Artist {
+  create(artist: ArtistDto): Artist {
     const newArtist = {
       id: uuidv4(),
       ...artist,
@@ -56,7 +58,7 @@ export class ArtistService {
     return newArtist;
   }
 
-  update({ id, body }: { id: string; body: Artist }): Artist {
+  update({ id, body }: { id: string; body: ArtistDto }): Artist {
     const artist = this.getUnique(id);
     Object.keys(body).forEach((key) => {
       artist[key] = body[key];

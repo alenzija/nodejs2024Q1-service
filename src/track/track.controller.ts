@@ -21,10 +21,9 @@ import {
 
 import { TrackService } from './track.service';
 
-import { Track } from './interfaces/track.interface';
+import { Track } from './entity/track.entity';
 import { TrackDto } from './dto/track.dto';
-import { TrackResponseDto } from './dto/trackResponse.dto';
-import { ErrorResponseDto } from 'src/dto/errorResponse.dto';
+import { ErrorResponse } from 'src/entity/errorResponse.entity';
 
 @ApiTags('Track controller')
 @Controller('track')
@@ -34,7 +33,7 @@ export class TrackController {
   @Get()
   @ApiResponse({
     status: 200,
-    type: [TrackResponseDto],
+    type: [Track],
   })
   async getAll(): Promise<Track[]> {
     return this.trackService.getAll();
@@ -43,17 +42,17 @@ export class TrackController {
   @Get(':uuid')
   @ApiResponse({
     status: 200,
-    type: TrackResponseDto,
+    type: Track,
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "The track's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "The track with this id doesn't exist",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async getUnique(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -67,17 +66,17 @@ export class TrackController {
   @ApiResponse({
     status: 201,
     description: 'The track has been successfully created.',
-    type: TrackResponseDto,
+    type: Track,
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "Body doesn't contain required fields",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiUnprocessableEntityResponse({
     status: 422,
     description: "There aren't any artists(albums) with this artistId(albumId)",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async create(
     @Body(new ValidationPipe())
@@ -92,22 +91,22 @@ export class TrackController {
   @ApiResponse({
     status: 200,
     description: 'The track has been successfully updated.',
-    type: TrackResponseDto,
+    type: Track,
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "The track's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "There aren't any tracks with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiUnprocessableEntityResponse({
     status: 422,
     description: "There aren't any artists(albums) with this artistId(albumId)",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async update(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -128,12 +127,12 @@ export class TrackController {
   @ApiBadRequestResponse({
     status: 400,
     description: "The track's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "There aren't any tracks with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async delete(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))

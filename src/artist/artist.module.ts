@@ -7,7 +7,7 @@ import { TrackModule } from 'src/track/track.module';
 
 @Module({
   imports: [
-    DbModule,
+    forwardRef(() => DbModule),
     forwardRef(() => AlbumModule),
     forwardRef(() => TrackModule),
   ],

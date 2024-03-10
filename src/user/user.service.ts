@@ -2,28 +2,33 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
+  forwardRef,
 } from '@nestjs/common';
-
 import { v4 as uuidv4 } from 'uuid';
 
-import { UpdatePassword } from './interfaces/updatePassword.interface';
-import { User } from 'src/user/interfaces/user.interface';
 import { DbService } from 'src/db/db.service';
+import { UserResponse } from './entity/userResponse.entity';
+import { UpdateUserDto } from './dto/updateUser.dto';
+import { CreateUserDto } from './dto/createUser.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private db: DbService) {}
+  constructor(
+    @Inject(forwardRef(() => DbService))
+    private db: DbService,
+  ) {}
 
-  transformToResponseUser(user: User): User {
+  transformToResponseUser(user: UserResponse): UserResponse {
     return { ...user, password: undefined };
   }
 
-  getAll(): User[] {
+  getAll(): UserResponse[] {
     return this.db.users.map(this.transformToResponseUser);
   }
 
-  getById(id: string): User {
+  getById(id: string): UserResponse {
     const user = this.db.users.find((user) => user.id === id);
     if (!user) {
       throw new HttpException(
@@ -37,12 +42,12 @@ export class UserService {
     return user;
   }
 
-  getByLogin(login: string): User {
+  getByLogin(login: string): UserResponse {
     const user = this.db.users.find((user) => user.login === login);
     return user;
   }
 
-  create(user: User): User {
+  create(user: CreateUserDto): UserResponse {
     const currentUser = this.getByLogin(user.login);
     if (currentUser) {
       throw new BadRequestException({
@@ -67,8 +72,8 @@ export class UserService {
     body: { oldPassword, newPassword },
   }: {
     id: string;
-    body: UpdatePassword;
-  }): User {
+    body: UpdateUserDto;
+  }): UserResponse {
     const user = this.getById(id);
     if (user.password !== oldPassword) {
       throw new HttpException(

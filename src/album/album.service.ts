@@ -1,16 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Album } from './interface/album.interface';
+import { Album } from './entity/album.entity';
 import { DbService } from 'src/db/db.service';
 import { TrackService } from 'src/track/track.service';
 import { ArtistService } from 'src/artist/artist.service';
+import { AlbumDto } from './dto/album.dto';
 
 @Injectable()
 export class AlbumService {
   constructor(
+    @Inject(forwardRef(() => DbService))
     private db: DbService,
+    @Inject(forwardRef(() => TrackService))
     private trackService: TrackService,
+    @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
   ) {}
 
@@ -39,7 +49,7 @@ export class AlbumService {
     return album;
   }
 
-  create(album: Album): Album {
+  create(album: AlbumDto): Album {
     const newAlbum = {
       id: uuidv4(),
       ...album,
@@ -57,7 +67,7 @@ export class AlbumService {
     return newAlbum;
   }
 
-  update({ id, body }: { id: string; body: Album }): Album {
+  update({ id, body }: { id: string; body: AlbumDto }): Album {
     const album = this.getUnique(id);
     if (body.artistId) {
       this.artistService.getUnique(body.artistId, {

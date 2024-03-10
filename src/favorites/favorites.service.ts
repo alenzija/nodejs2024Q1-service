@@ -1,16 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { AlbumService } from 'src/album/album.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { DbService } from 'src/db/db.service';
 import { TrackService } from 'src/track/track.service';
-import { FavoritesResponse } from './interfaces/favoritesResponse.interface';
+import { FavoritesResponse } from './entity/favoritesResponse.entity';
 
 @Injectable()
 export class FavoritesService {
   constructor(
+    @Inject(forwardRef(() => DbService))
     private db: DbService,
+    @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
+    @Inject(forwardRef(() => TrackService))
     private trackService: TrackService,
+    @Inject(forwardRef(() => AlbumService))
     private albumService: AlbumService,
   ) {}
 

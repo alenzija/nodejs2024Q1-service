@@ -17,9 +17,8 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { FavoritesService } from './favorites.service';
-import { FavoritesResponse } from './interfaces/favoritesResponse.interface';
-import { FavoritesResponseDto } from './dto/favoritesResponse.dto';
-import { ErrorResponseDto } from 'src/dto/errorResponse.dto';
+import { FavoritesResponse } from './entity/favoritesResponse.entity';
+import { ErrorResponse } from 'src/entity/errorResponse.entity';
 
 @ApiTags('Favorites controller')
 @Controller('favs')
@@ -29,7 +28,7 @@ export class FavoritesController {
   @Get()
   @ApiResponse({
     status: 200,
-    type: [FavoritesResponseDto],
+    type: [FavoritesResponse],
   })
   async getAll(): Promise<FavoritesResponse> {
     return this.favoritesService.getAll();
@@ -44,12 +43,12 @@ export class FavoritesController {
   @ApiBadRequestResponse({
     status: 400,
     description: "This id isn't valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiUnprocessableEntityResponse({
     status: 422,
     description: "There aren't any tracks with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async addTrack(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -67,12 +66,12 @@ export class FavoritesController {
   @ApiBadRequestResponse({
     status: 400,
     description: "The track's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "There aren't any favorite tracks with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async deleteTrack(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -89,12 +88,12 @@ export class FavoritesController {
   @ApiBadRequestResponse({
     status: 400,
     description: "This id isn't valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiUnprocessableEntityResponse({
     status: 422,
     description: "There aren't any artists with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async addArtist(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -112,12 +111,12 @@ export class FavoritesController {
   @ApiBadRequestResponse({
     status: 400,
     description: "The artist's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "There aren't any favorite artists with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async deleteArtist(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -134,12 +133,12 @@ export class FavoritesController {
   @ApiBadRequestResponse({
     status: 400,
     description: "This id isn't valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiUnprocessableEntityResponse({
     status: 422,
     description: "There aren't any albums with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async addAlbum(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -157,12 +156,12 @@ export class FavoritesController {
   @ApiBadRequestResponse({
     status: 400,
     description: "The album's id is not valid",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   @ApiNotFoundResponse({
     status: 404,
     description: "There aren't any favorite albums with this id",
-    type: ErrorResponseDto,
+    type: ErrorResponse,
   })
   async deleteAlbum(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,

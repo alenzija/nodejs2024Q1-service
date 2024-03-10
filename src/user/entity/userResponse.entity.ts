@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsInt, IsString, IsUUID } from 'class-validator';
+import {
+  IsDefined,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
-export class UserResponseDto {
+export class UserResponse {
   @ApiProperty({ default: '21edb05f-f8c8-48a4-91f6-ec34cfec7a4b' })
   @IsDefined()
   @IsUUID('4')
@@ -26,4 +32,8 @@ export class UserResponseDto {
   @IsDefined()
   @IsInt()
   updatedAt: number;
+
+  @IsString()
+  @IsOptional()
+  password?: string;
 }

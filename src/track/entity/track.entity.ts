@@ -7,7 +7,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class TrackResponseDto {
+export class Track {
   @IsUUID('4')
   @IsDefined()
   @ApiProperty({
