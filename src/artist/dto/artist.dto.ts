@@ -5,7 +5,7 @@ export class ArtistDto {
   @IsString()
   @IsDefined()
   @ApiProperty({
-    default: 'artistName',
+    default: 'Freddie Mercury',
   })
   name: string;
 

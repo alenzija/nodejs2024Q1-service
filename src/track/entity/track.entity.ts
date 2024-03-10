@@ -11,14 +11,14 @@ export class Track {
   @IsUUID('4')
   @IsDefined()
   @ApiProperty({
-    default: 'a9d9877b-f788-4da4-9f66-f468150c3755',
+    format: 'uui4',
   })
   id: string;
 
   @IsString()
   @IsDefined()
   @ApiProperty({
-    default: 'trackName',
+    default: 'The Show Must Go On',
   })
   name: string;
 
@@ -26,6 +26,7 @@ export class Track {
   @IsOptional()
   @ApiPropertyOptional({
     nullable: true,
+    format: 'uui4',
   })
   artistId?: string;
 
@@ -33,12 +34,15 @@ export class Track {
   @IsOptional()
   @ApiPropertyOptional({
     nullable: true,
+    format: 'uui4',
   })
   albumId?: string;
 
   @IsInt()
   @IsDefined()
   @ApiProperty({
+    type: 'integer',
+    description: 'In seconds',
     default: 300,
   })
   duration: number;

@@ -1,13 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDefined, IsInt, IsString, IsUUID } from 'class-validator';
 
 export class Album {
-  @ApiProperty({ default: '21edb05f-f8c8-48a4-91f6-ec34cfec7a4b' })
+  @ApiProperty({ format: 'uui4' })
   @IsUUID('4')
   @IsDefined()
   id: string;
 
-  @ApiProperty({ default: 'AlbumName' })
+  @ApiProperty({ default: 'Innuendo' })
   @IsString()
   @IsDefined()
   name: string;
@@ -17,9 +17,10 @@ export class Album {
   @IsDefined()
   year: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: 'string',
     nullable: true,
+    format: 'uui4',
   })
   @IsString()
   artistId: string | null; // refers to Artist

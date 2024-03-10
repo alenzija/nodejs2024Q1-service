@@ -12,8 +12,9 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiConsumes,
+  ApiBody,
   ApiNotFoundResponse,
+  ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -22,14 +23,16 @@ import { ArtistService } from './artist.service';
 import { ArtistDto } from './dto/artist.dto';
 import { Artist } from './entity/artist.entity';
 
-import { ErrorResponse } from 'src/entity/errorResponse.entity';
-
 @ApiTags('Artist controller')
 @Controller('artist')
 export class ArtistController {
   constructor(private artistService: ArtistService) {}
 
   @Get()
+  @ApiOperation({
+    summary: 'Get all artists',
+    description: 'Gets all artists',
+  })
   @ApiResponse({
     status: 200,
     type: [Artist],
@@ -39,19 +42,22 @@ export class ArtistController {
   }
 
   @Get(':uuid')
+  @ApiOperation({
+    summary: 'Get single artist by id',
+    description: 'Gets single artist by id',
+  })
   @ApiResponse({
     status: 200,
     type: Artist,
+    content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: "The artist's id is not valid",
-    type: ErrorResponse,
+    description: 'Bad request. artistId is invalid (not uuid)',
   })
   @ApiNotFoundResponse({
     status: 404,
-    description: "The artist with this id doesn't exist",
-    type: ErrorResponse,
+    description: 'Artist was not found',
   })
   async getUnique(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -61,16 +67,20 @@ export class ArtistController {
   }
 
   @Post()
-  @ApiConsumes('application/json')
+  @ApiOperation({
+    summary: 'Add new artist',
+    description: 'Add new artist',
+  })
+  @ApiBody({ type: ArtistDto, required: true })
   @ApiResponse({
     status: 201,
     description: 'The artist has been successfully created.',
     type: Artist,
+    content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({
     status: 400,
     description: "Body doesn't contain required fields",
-    type: ErrorResponse,
   })
   async create(
     @Body(new ValidationPipe())
@@ -81,21 +91,24 @@ export class ArtistController {
 
   @Put(':uuid')
   @HttpCode(200)
-  @ApiConsumes('application/json')
+  @ApiOperation({
+    summary: 'Update artist information',
+    description: 'Update artist information by UUID',
+  })
+  @ApiBody({ type: ArtistDto, required: true })
   @ApiResponse({
     status: 200,
     description: 'The artist has been successfully updated.',
     type: Artist,
+    content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: "The artist's id is not valid",
-    type: ErrorResponse,
+    description: 'Bad request. artistId is invalid (not uuid)',
   })
   @ApiNotFoundResponse({
     status: 404,
-    description: "The artist with this id doesn't exist",
-    type: ErrorResponse,
+    description: 'Artist was not found',
   })
   async update(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -108,20 +121,21 @@ export class ArtistController {
 
   @Delete(':uuid')
   @HttpCode(204)
-  @ApiConsumes('application/json')
+  @ApiOperation({
+    summary: 'Delete artist',
+    description: 'Delete artist from library',
+  })
   @ApiResponse({
     status: 204,
     description: 'The artist has been successfully deleted.',
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: "The artist's id is not valid",
-    type: ErrorResponse,
+    description: 'Bad request. artistId is invalid (not uuid)',
   })
   @ApiNotFoundResponse({
     status: 404,
-    description: "The artist with this id doesn't exist",
-    type: ErrorResponse,
+    description: 'Artist was not found',
   })
   async delete(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))

@@ -13,9 +13,9 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
-  ApiConsumes,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -25,7 +25,6 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { UserResponse } from './entity/userResponse.entity';
-import { ErrorResponse } from 'src/entity/errorResponse.entity';
 
 @ApiTags('User controller')
 @Controller('user')
@@ -33,28 +32,38 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get()
+  @ApiOperation({
+    summary: 'Get all users',
+    description: 'Gets all users',
+  })
   @ApiResponse({
     status: 200,
+    description: 'Gets all users',
     type: [UserResponse],
+    content: { 'application/json': {} },
   })
   async getAll(): Promise<UserResponse[]> {
     return this.userService.getAll();
   }
 
   @Get(':uuid')
+  @ApiOperation({
+    summary: 'Get single user by id',
+    description: 'Gets single user by id',
+  })
   @ApiResponse({
     status: 200,
     type: UserResponse,
+    description: 'Successful operation',
+    content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: "The user's id is not valid",
-    type: ErrorResponse,
+    description: 'Bad request. userId is invalid (not uuid)',
   })
   @ApiNotFoundResponse({
     status: 404,
-    description: "The user with this id doesn't exist",
-    type: ErrorResponse,
+    description: 'User was not found',
   })
   async getById(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -64,17 +73,20 @@ export class UserController {
   }
 
   @Post()
-  @ApiConsumes('application/json')
-  @ApiBody({ type: CreateUserDto })
+  @ApiOperation({
+    summary: 'Create user',
+    description: 'Creates a new user',
+  })
+  @ApiBody({ type: CreateUserDto, required: true })
   @ApiResponse({
     status: 201,
     type: UserResponse,
-    description: 'The user has been successfully created.',
+    description: 'The user has been created.',
+    content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: "Body doesn't contain required fields",
-    type: ErrorResponse,
+    description: 'Bad request. Body does not contain required fields',
   })
   async create(
     @Body(new ValidationPipe())
@@ -85,26 +97,28 @@ export class UserController {
 
   @Put(':uuid')
   @HttpCode(200)
-  @ApiConsumes('application/json')
+  @ApiOperation({
+    summary: "Update a user's password",
+    description: "Updates a user's password by ID",
+  })
+  @ApiBody({ type: UpdateUserDto, required: true })
   @ApiResponse({
     status: 200,
-    description: 'The user has been successfully updated.',
+    description: 'The user has been updated.',
     type: UserResponse,
+    content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: "the user's id is not valid",
-    type: ErrorResponse,
+    description: 'Bad request. userId is invalid (not uuid)',
   })
   @ApiNotFoundResponse({
     status: 404,
-    description: "the user with this id doesn't exist",
-    type: ErrorResponse,
+    description: 'User was not found',
   })
   @ApiForbiddenResponse({
     status: 403,
-    description: 'The old password is wrong',
-    type: ErrorResponse,
+    description: 'oldPassword is wrong',
   })
   async update(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -116,21 +130,22 @@ export class UserController {
   }
 
   @Delete(':uuid')
-  @ApiConsumes('application/json')
   @HttpCode(204)
+  @ApiOperation({
+    summary: 'Delete user',
+    description: 'Deletes user by ID.',
+  })
   @ApiResponse({
     status: 204,
-    description: 'The user has been successfully deleted.',
+    description: 'The user has been deleted.',
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: "The user's id is not valid",
-    type: ErrorResponse,
+    description: 'Bad request. userId is invalid (not uuid)',
   })
   @ApiNotFoundResponse({
     status: 404,
-    description: "The user with this id doesn't exist",
-    type: ErrorResponse,
+    description: 'User was not found',
   })
   async delete(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))

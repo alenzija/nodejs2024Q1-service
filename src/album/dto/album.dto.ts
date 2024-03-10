@@ -4,12 +4,12 @@ import { IsDefined, IsInt, IsOptional, IsString } from 'class-validator';
 export class AlbumDto {
   @IsString()
   @IsDefined()
-  @ApiProperty()
+  @ApiProperty({ default: 'Innuendo' })
   name: string;
 
   @IsInt()
   @IsDefined()
-  @ApiProperty()
+  @ApiProperty({ default: 2024 })
   year: number;
 
   @IsString()
@@ -17,6 +17,7 @@ export class AlbumDto {
   @ApiPropertyOptional({
     type: 'string',
     nullable: true,
+    format: 'uui4',
   })
   artistId: string | null; // refers to Artist
 }

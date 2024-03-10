@@ -8,7 +8,9 @@ import {
 } from 'class-validator';
 
 export class UserResponse {
-  @ApiProperty({ default: '21edb05f-f8c8-48a4-91f6-ec34cfec7a4b' })
+  @ApiProperty({
+    format: 'uui4',
+  })
   @IsDefined()
   @IsUUID('4')
   id: string;
