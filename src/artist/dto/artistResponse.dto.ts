@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDefined, IsString } from 'class-validator';
+import { IsBoolean, IsDefined, IsString, IsUUID } from 'class-validator';
 
-export class ArtistDto {
+export class ArtistResponseDto {
+  @IsUUID('4')
+  @ApiProperty({
+    default: 'a9d9877b-f788-4da4-9f66-f468150c3755',
+  })
+  id: string;
+
   @IsString()
   @IsDefined()
   @ApiProperty({
@@ -10,7 +16,6 @@ export class ArtistDto {
   name: string;
 
   @IsBoolean()
-  @IsDefined()
   @ApiProperty({
     default: true,
   })

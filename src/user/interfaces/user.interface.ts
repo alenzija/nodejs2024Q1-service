@@ -4,5 +4,5 @@ export interface User {
   password?: string;
   version?: number;
   createdAt?: number;
-  updatedAt?: number | null;
+  updatedAt?: number;
 }

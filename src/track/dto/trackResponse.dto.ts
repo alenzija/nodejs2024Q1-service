@@ -7,10 +7,19 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class TrackDto {
+export class TrackResponseDto {
+  @IsUUID('4')
+  @IsDefined()
+  @ApiProperty({
+    default: 'a9d9877b-f788-4da4-9f66-f468150c3755',
+  })
+  id: string;
+
   @IsString()
   @IsDefined()
-  @ApiProperty()
+  @ApiProperty({
+    default: 'trackName',
+  })
   name: string;
 
   @IsUUID('4')
@@ -29,6 +38,8 @@ export class TrackDto {
 
   @IsInt()
   @IsDefined()
-  @ApiProperty()
+  @ApiProperty({
+    default: 300,
+  })
   duration: number;
 }

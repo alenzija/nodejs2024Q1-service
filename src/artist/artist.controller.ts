@@ -10,10 +10,18 @@ import {
   Put,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiConsumes,
+  ApiNotFoundResponse,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ArtistService } from './artist.service';
 import { Artist } from './interfaces/artist.interface';
 import { ArtistDto } from './dto/artist.dto';
+import { ArtistResponseDto } from './dto/artistResponse.dto';
+import { ErrorResponseDto } from 'src/dto/errorResponse.dto';
 
 @ApiTags('Artist controller')
 @Controller('artist')
@@ -21,11 +29,29 @@ export class ArtistController {
   constructor(private artistService: ArtistService) {}
 
   @Get()
+  @ApiResponse({
+    status: 200,
+    type: [ArtistResponseDto],
+  })
   async getAll(): Promise<Artist[]> {
     return this.artistService.getAll();
   }
 
   @Get(':uuid')
+  @ApiResponse({
+    status: 200,
+    type: ArtistResponseDto,
+  })
+  @ApiBadRequestResponse({
+    status: 400,
+    description: "The artist's id is not valid",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    status: 404,
+    description: "The artist with this id doesn't exist",
+    type: ErrorResponseDto,
+  })
   async getUnique(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
@@ -37,7 +63,13 @@ export class ArtistController {
   @ApiConsumes('application/json')
   @ApiResponse({
     status: 201,
-    description: 'The track has been successfully created.',
+    description: 'The artist has been successfully created.',
+    type: ArtistResponseDto,
+  })
+  @ApiBadRequestResponse({
+    status: 400,
+    description: "Body doesn't contain required fields",
+    type: ErrorResponseDto,
   })
   async create(
     @Body(new ValidationPipe())
@@ -51,7 +83,18 @@ export class ArtistController {
   @ApiConsumes('application/json')
   @ApiResponse({
     status: 200,
-    description: 'The track has been successfully updated.',
+    description: 'The artist has been successfully updated.',
+    type: ArtistResponseDto,
+  })
+  @ApiBadRequestResponse({
+    status: 400,
+    description: "The artist's id is not valid",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    status: 404,
+    description: "The artist with this id doesn't exist",
+    type: ErrorResponseDto,
   })
   async update(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
@@ -67,7 +110,17 @@ export class ArtistController {
   @ApiConsumes('application/json')
   @ApiResponse({
     status: 204,
-    description: 'The track has been successfully deleted.',
+    description: 'The artist has been successfully deleted.',
+  })
+  @ApiBadRequestResponse({
+    status: 400,
+    description: "The artist's id is not valid",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    status: 404,
+    description: "The artist with this id doesn't exist",
+    type: ErrorResponseDto,
   })
   async delete(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))

@@ -59,6 +59,12 @@ export class AlbumService {
 
   update({ id, body }: { id: string; body: Album }): Album {
     const album = this.getUnique(id);
+    if (body.artistId) {
+      this.artistService.getUnique(body.artistId, {
+        statusCode: 422,
+        httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+      });
+    }
     Object.keys(body).forEach((key) => {
       if (body[key]) {
         album[key] = body[key];
