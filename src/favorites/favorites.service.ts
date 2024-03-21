@@ -26,9 +26,10 @@ export class FavoritesService {
 
   getAll(): FavoritesResponse {
     return {
-      artists: this.db.favorites.artists.map((artistId) =>
-        this.artistService.getUnique(artistId),
-      ),
+      // artists: this.db.favorites.artists.map((artistId) =>
+      //   this.artistService.getUnique(artistId),
+      // ),
+      artists: [],
       albums: this.db.favorites.albums.map((albumId) =>
         this.albumService.getUnique(albumId),
       ),

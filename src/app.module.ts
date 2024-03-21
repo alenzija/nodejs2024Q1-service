@@ -9,6 +9,7 @@ import { DbModule } from './db/db.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './user/user.model';
+import { Artist } from './artist/artist.model';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { User } from './user/user.model';
       username: 'postgres',
       password: 'root',
       database: 'postgres',
-      models: [User],
+      models: [User, Artist],
       autoLoadModels: true,
     }),
   ],

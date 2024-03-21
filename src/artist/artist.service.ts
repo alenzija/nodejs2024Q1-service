@@ -5,9 +5,10 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Artist } from './entity/artist.entity';
+import { Artist } from './artist.model';
 import { DbService } from 'src/db/db.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
@@ -16,6 +17,8 @@ import { ArtistDto } from './dto/artist.dto';
 @Injectable()
 export class ArtistService {
   constructor(
+    @InjectModel(Artist)
+    private artists: typeof Artist,
     @Inject(forwardRef(() => DbService))
     private db: DbService,
     @Inject(forwardRef(() => AlbumService))
@@ -24,18 +27,18 @@ export class ArtistService {
     private trackService: TrackService,
   ) {}
 
-  getAll() {
-    return this.db.artists;
+  async getAll() {
+    return await this.artists.findAll();
   }
 
-  getUnique(
+  async getUnique(
     id: string,
     error: { statusCode: number; httpStatus: HttpStatus } = {
       statusCode: 404,
       httpStatus: HttpStatus.NOT_FOUND,
     },
-  ): Artist {
-    const artist = this.db.artists.find((artist) => artist.id === id);
+  ) {
+    const artist = await this.artists.findOne({ where: { id } });
     if (!artist) {
       const { statusCode, httpStatus } = error;
       throw new HttpException(
@@ -49,27 +52,26 @@ export class ArtistService {
     return artist;
   }
 
-  create(artist: ArtistDto): Artist {
+  async create(artist: ArtistDto) {
     const newArtist = {
       id: uuidv4(),
       ...artist,
     };
-    this.db.artists.push(newArtist);
+    await this.artists.create(newArtist);
     return newArtist;
   }
 
-  update({ id, body }: { id: string; body: ArtistDto }): Artist {
-    const artist = this.getUnique(id);
-    Object.keys(body).forEach((key) => {
-      artist[key] = body[key];
-    });
-
-    return artist;
+  async update({ id, body }: { id: string; body: ArtistDto }) {
+    const artist = await this.getUnique(id);
+    await artist.update({ ...body });
+    const updatedArtist = await this.getUnique(id);
+    return updatedArtist;
   }
 
-  delete(id: string): void {
-    this.getUnique(id);
-    this.db.artists = this.db.artists.filter((artist) => artist.id !== id);
+  async delete(id: string) {
+    const artist = await this.getUnique(id);
+    artist.destroy();
+
     this.albumService.setArtistIdNull(id);
     this.trackService.setArtistIdNull(id);
     this.db.favorites.artists = this.db.favorites.artists.filter(
