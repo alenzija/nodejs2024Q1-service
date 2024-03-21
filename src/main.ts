@@ -5,6 +5,8 @@ import * as YAML from 'yamljs';
 
 import { AppModule } from './app.module';
 
+const PORT = process.env.PORT || 4000;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
@@ -31,6 +33,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/runtime-docs', app, document);
 
-  await app.listen(4000);
+  await app.listen(PORT);
 }
 bootstrap();

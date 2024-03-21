@@ -42,8 +42,8 @@ export class UserController {
     type: [UserResponse],
     content: { 'application/json': {} },
   })
-  async getAll(): Promise<UserResponse[]> {
-    return this.userService.getAll();
+  async getAll() {
+    return await this.userService.getAll();
   }
 
   @Get(':uuid')
@@ -68,8 +68,8 @@ export class UserController {
   async getById(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
-  ): Promise<UserResponse | null> {
-    return this.userService.getById(uuid);
+  ) {
+    return await this.userService.getById(uuid);
   }
 
   @Post()
@@ -92,7 +92,7 @@ export class UserController {
     @Body(new ValidationPipe())
     createUserDto: CreateUserDto,
   ) {
-    return this.userService.create(createUserDto);
+    return await this.userService.create(createUserDto);
   }
 
   @Put(':uuid')
@@ -126,7 +126,7 @@ export class UserController {
     @Body(new ValidationPipe())
     updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.update({ id: uuid, body: updateUserDto });
+    return await this.userService.update({ id: uuid, body: updateUserDto });
   }
 
   @Delete(':uuid')
@@ -151,6 +151,6 @@ export class UserController {
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<void> {
-    return this.userService.delete(uuid);
+    return await this.userService.delete(uuid);
   }
 }

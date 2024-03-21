@@ -25,15 +25,13 @@ export class UserResponse {
   @IsInt()
   version: number;
 
-  @ApiProperty({ default: Date.now() })
+  @ApiProperty()
   @IsDefined()
-  @IsInt()
-  createdAt: number;
+  createdAt: number | Date;
 
-  @ApiProperty({ default: Date.now() })
+  @ApiProperty()
   @IsDefined()
-  @IsInt()
-  updatedAt: number;
+  updatedAt: number | Date;
 
   @IsString()
   @IsOptional()
