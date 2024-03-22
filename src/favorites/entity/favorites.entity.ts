@@ -13,21 +13,23 @@ export class Favorites {
   @ApiProperty({
     type: [Artist],
   })
-  @ManyToMany(() => Artist, { cascade: true })
+  @ManyToMany(() => Artist, {
+    cascade: ['remove'],
+  })
   @JoinTable()
   artists: Artist[];
 
   @ApiProperty({
     type: [Track],
   })
-  @ManyToMany(() => Track, { cascade: true })
+  @ManyToMany(() => Track, { cascade: ['remove'] })
   @JoinTable()
   tracks: Track[];
 
   @ApiProperty({
     type: [Album],
   })
-  @ManyToMany(() => Album, { cascade: true })
+  @ManyToMany(() => Album, { cascade: ['remove'] })
   @JoinTable()
   albums: Album[];
 }

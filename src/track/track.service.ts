@@ -89,7 +89,13 @@ export class TrackService {
     }
 
     await this.tracks.save(newTrack);
-    return newTrack;
+    return {
+      ...newTrack,
+      artistId: newTrack.artist ? newTrack.artist.id : null,
+      albumId: newTrack.album ? newTrack.album.id : null,
+      artist: undefined,
+      album: undefined,
+    };
   }
 
   async update({ id, body }: { id: string; body: TrackDto }) {
@@ -118,7 +124,13 @@ export class TrackService {
     track.duration = body.duration;
 
     await this.tracks.save(track);
-    return track;
+    return {
+      ...track,
+      artistId: track.artist ? track.artist.id : null,
+      albumId: track.album ? track.album.id : null,
+      artist: undefined,
+      album: undefined,
+    };
   }
 
   async delete(id: string) {
