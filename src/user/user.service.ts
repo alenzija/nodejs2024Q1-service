@@ -6,20 +6,19 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
-import { UserResponse } from './entity/userResponse.entity';
+import { User } from './entity/user.entity';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { CreateUserDto } from './dto/createUser.dto';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserResponse)
-    private users: Repository<UserResponse>,
+    @InjectRepository(User)
+    private users: Repository<User>,
   ) {}
 
-  transformToResponseUser(user: UserResponse) {
+  transformToResponseUser(user: User) {
     return {
       ...user,
       password: undefined,
@@ -59,14 +58,11 @@ export class UserService {
         message: 'User with this login is already exist',
       });
     }
-    const id = uuidv4();
-    const newUser = new UserResponse();
-    newUser.id = id;
+
+    const newUser = new User();
+
     newUser.login = user.login;
     newUser.password = user.password;
-    newUser.version = 1;
-    newUser.createdAt = new Date();
-    newUser.updatedAt = new Date();
 
     await this.users.save(newUser);
     return this.transformToResponseUser(newUser);
@@ -98,10 +94,6 @@ export class UserService {
         HttpStatus.FORBIDDEN,
       );
     }
-    const newUpdatedAt = new Date();
-    const newVersion = user.version + 1;
-    user.updatedAt = newUpdatedAt;
-    user.version = newVersion;
     user.password = newPassword;
     await this.users.save(user);
 

@@ -8,11 +8,13 @@ import { UserModule } from './user/user.module';
 import { TrackModule } from './track/track.module';
 import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
-import { DbModule } from './db/db.module';
 import { FavoritesModule } from './favorites/favorites.module';
 
-import { UserResponse } from './user/entity/userResponse.entity';
+import { User } from './user/entity/user.entity';
 import { Artist } from './artist/entity/artist.entity';
+import { Album } from './album/entity/album.entity';
+import { Track } from './track/entity/track.entity';
+import { Favorites } from './favorites/entity/favorites.entity';
 
 @Module({
   imports: [
@@ -20,7 +22,6 @@ import { Artist } from './artist/entity/artist.entity';
     TrackModule,
     ArtistModule,
     AlbumModule,
-    DbModule,
     FavoritesModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -29,7 +30,7 @@ import { Artist } from './artist/entity/artist.entity';
       username: 'postgres',
       password: 'root',
       database: 'postgres',
-      entities: [UserResponse, Artist],
+      entities: [User, Artist, Album, Track, Favorites],
       synchronize: true,
     }),
   ],

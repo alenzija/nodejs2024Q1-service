@@ -5,10 +5,10 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { Track } from './entity/track.entity';
-import { DbService } from 'src/db/db.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackDto } from './dto/track.dto';
@@ -16,25 +16,34 @@ import { TrackDto } from './dto/track.dto';
 @Injectable()
 export class TrackService {
   constructor(
-    @Inject(forwardRef(() => DbService))
-    private db: DbService,
+    @InjectRepository(Track)
+    private tracks: Repository<Track>,
     @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
     @Inject(forwardRef(() => AlbumService))
     private albumService: AlbumService,
   ) {}
-  getAll() {
-    return this.db.tracks;
+  async getAll() {
+    const tracks = await this.tracks.find({
+      relations: ['artist', 'album'],
+    });
+    return tracks.map((track) => ({
+      ...track,
+      artistId: track.artist ? track.artist.id : null,
+      albumId: track.album ? track.album.id : null,
+      artist: undefined,
+      album: undefined,
+    }));
   }
 
-  getUnique(
+  async getUnique(
     id: string,
     error: { statusCode: number; httpStatus: HttpStatus } = {
       statusCode: 404,
       httpStatus: HttpStatus.NOT_FOUND,
     },
-  ): Track {
-    const track = this.db.tracks.find((track) => track.id === id);
+  ) {
+    const track = await this.tracks.findOneBy({ id });
     if (!track) {
       const { statusCode, httpStatus } = error;
       throw new HttpException(
@@ -45,64 +54,75 @@ export class TrackService {
         httpStatus,
       );
     }
-    return track;
+    return {
+      ...track,
+      artistId: track.artist ? track.artist.id : null,
+      albumId: track.album ? track.album.id : null,
+      artist: undefined,
+      album: undefined,
+    };
   }
 
-  create(track: TrackDto): Track {
-    const newTrack = {
-      id: uuidv4(),
-      ...track,
-    };
+  async create(track: TrackDto) {
+    const newTrack = new Track();
+    newTrack.duration = track.duration;
+    newTrack.name = track.name;
 
-    if (newTrack.artistId) {
-      this.artistService.getUnique(newTrack.artistId, {
+    if (track.artistId) {
+      const artist = await this.artistService.getUnique(track.artistId, {
         statusCode: 422,
         httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
       });
+      newTrack.artist = artist;
     } else {
-      newTrack.artistId = null;
+      newTrack.artist = null;
     }
 
-    if (newTrack.albumId) {
-      this.albumService.getUnique(newTrack.albumId, {
+    if (track.albumId) {
+      const album = await this.albumService.getUnique(track.albumId, {
         statusCode: 422,
         httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
       });
+      newTrack.album = album;
     } else {
-      newTrack.albumId = null;
+      newTrack.album = null;
     }
-    this.db.tracks.push(newTrack);
+
+    await this.tracks.save(newTrack);
     return newTrack;
   }
 
-  update({ id, body }: { id: string; body: TrackDto }): Track {
-    const track = this.getUnique(id);
-    Object.keys(body).forEach((key) => {
-      if (body[key]) {
-        track[key] = body[key];
-      }
-    });
+  async update({ id, body }: { id: string; body: TrackDto }) {
+    const track = await this.getUnique(id);
+    if (body.artistId) {
+      const artist = await this.artistService.getUnique(body.artistId, {
+        statusCode: 422,
+        httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+      });
+      track.artist = artist;
+    } else {
+      track.artist = null;
+    }
 
+    if (body.albumId) {
+      const album = await this.albumService.getUnique(body.albumId, {
+        statusCode: 422,
+        httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+      });
+      track.album = album;
+    } else {
+      track.album = null;
+    }
+
+    track.name = body.name;
+    track.duration = body.duration;
+
+    await this.tracks.save(track);
     return track;
   }
 
-  delete(id: string): void {
-    this.getUnique(id);
-    this.db.tracks = this.db.tracks.filter((track) => track.id !== id);
-    this.db.favorites.tracks = this.db.favorites.tracks.filter(
-      (trackId) => trackId !== id,
-    );
-  }
-
-  setArtistIdNull(artistId: string): void {
-    this.db.tracks = this.db.tracks.map((track) =>
-      track.artistId === artistId ? { ...track, artistId: null } : track,
-    );
-  }
-
-  setAlbumIdNull(albumId: string): void {
-    this.db.tracks = this.db.tracks.map((track) =>
-      track.albumId === albumId ? { ...track, albumId: null } : track,
-    );
+  async delete(id: string) {
+    await this.getUnique(id);
+    await this.tracks.delete({ id });
   }
 }

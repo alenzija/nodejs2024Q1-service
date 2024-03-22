@@ -24,7 +24,7 @@ import { UserService } from './user.service';
 
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
-import { UserResponse } from './entity/userResponse.entity';
+import { User } from './entity/user.entity';
 
 @ApiTags('User controller')
 @Controller('user')
@@ -39,7 +39,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Gets all users',
-    type: [UserResponse],
+    type: [User],
     content: { 'application/json': {} },
   })
   async getAll() {
@@ -53,7 +53,7 @@ export class UserController {
   })
   @ApiResponse({
     status: 200,
-    type: UserResponse,
+    type: User,
     description: 'Successful operation',
     content: { 'application/json': {} },
   })
@@ -80,7 +80,7 @@ export class UserController {
   @ApiBody({ type: CreateUserDto, required: true })
   @ApiResponse({
     status: 201,
-    type: UserResponse,
+    type: User,
     description: 'The user has been created.',
     content: { 'application/json': {} },
   })
@@ -105,7 +105,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'The user has been updated.',
-    type: UserResponse,
+    type: User,
     content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({

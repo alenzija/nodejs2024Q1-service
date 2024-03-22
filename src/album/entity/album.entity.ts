@@ -1,20 +1,31 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDefined, IsInt, IsString, IsUUID } from 'class-validator';
+import { Artist } from 'src/artist/entity/artist.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
+@Entity()
 export class Album {
   @ApiProperty({ format: 'uui4' })
-  @IsUUID('4')
-  @IsDefined()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @ApiProperty({ default: 'Innuendo' })
-  @IsString()
-  @IsDefined()
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
   name: string;
 
   @ApiProperty({ default: 2024 })
-  @IsInt()
-  @IsDefined()
+  @Column({
+    type: 'int',
+    nullable: false,
+  })
   year: number;
 
   @ApiPropertyOptional({
@@ -22,6 +33,7 @@ export class Album {
     nullable: true,
     format: 'uui4',
   })
-  @IsString()
-  artistId: string | null; // refers to Artist
+  @OneToOne(() => Artist, { cascade: true })
+  @JoinColumn()
+  artist: Artist; // refers to Artist
 }

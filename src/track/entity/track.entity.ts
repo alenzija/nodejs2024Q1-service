@@ -1,49 +1,55 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Album } from 'src/album/entity/album.entity';
+import { Artist } from 'src/artist/entity/artist.entity';
 import {
-  IsDefined,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
+@Entity()
 export class Track {
-  @IsUUID('4')
-  @IsDefined()
   @ApiProperty({
     format: 'uui4',
   })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @IsString()
-  @IsDefined()
   @ApiProperty({
     default: 'The Show Must Go On',
   })
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
   name: string;
 
-  @IsUUID('4')
-  @IsOptional()
   @ApiPropertyOptional({
     nullable: true,
     format: 'uui4',
   })
-  artistId?: string;
+  @OneToOne(() => Artist, { cascade: true })
+  @JoinColumn()
+  artist: Artist;
 
-  @IsUUID('4')
-  @IsOptional()
   @ApiPropertyOptional({
     nullable: true,
     format: 'uui4',
   })
-  albumId?: string;
+  @OneToOne(() => Album, { cascade: true })
+  @JoinColumn()
+  album: Album;
 
-  @IsInt()
-  @IsDefined()
   @ApiProperty({
     type: 'integer',
     description: 'In seconds',
     default: 300,
+  })
+  @Column({
+    type: 'int',
+    nullable: false,
   })
   duration: number;
 }

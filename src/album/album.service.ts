@@ -5,10 +5,10 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { Album } from './entity/album.entity';
-import { DbService } from 'src/db/db.service';
 import { TrackService } from 'src/track/track.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { AlbumDto } from './dto/album.dto';
@@ -16,26 +16,36 @@ import { AlbumDto } from './dto/album.dto';
 @Injectable()
 export class AlbumService {
   constructor(
-    @Inject(forwardRef(() => DbService))
-    private db: DbService,
+    @InjectRepository(Album)
+    private albums: Repository<Album>,
     @Inject(forwardRef(() => TrackService))
     private trackService: TrackService,
     @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
   ) {}
 
-  getAll() {
-    return this.db.albums;
+  async getAll() {
+    const albums = await this.albums.find({
+      relations: ['artist'],
+    });
+    return albums.map((album) => ({
+      ...album,
+      artistId: album.artist ? album.artist.id : null,
+      artist: undefined,
+    }));
   }
 
-  getUnique(
+  async getUnique(
     id: string,
     error: { statusCode: number; httpStatus: HttpStatus } = {
       statusCode: 404,
       httpStatus: HttpStatus.NOT_FOUND,
     },
-  ): Album {
-    const album = this.db.albums.find((album) => album.id === id);
+  ) {
+    const album = await this.albums.findOne({
+      where: { id },
+      relations: ['artist'],
+    });
     if (!album) {
       const { statusCode, httpStatus } = error;
       throw new HttpException(
@@ -46,56 +56,51 @@ export class AlbumService {
         httpStatus,
       );
     }
-    return album;
+    return {
+      ...album,
+      artistId: album.artist ? album.artist.id : null,
+      artist: undefined,
+    };
   }
 
-  create(album: AlbumDto): Album {
-    const newAlbum = {
-      id: uuidv4(),
-      ...album,
-    };
-    if (newAlbum.artistId) {
-      this.artistService.getUnique(newAlbum.artistId, {
+  async create(album: AlbumDto) {
+    const newAlbum = new Album();
+    newAlbum.name = album.name;
+    newAlbum.year = album.year;
+
+    if (album.artistId) {
+      const artist = await this.artistService.getUnique(album.artistId, {
         statusCode: 422,
         httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
       });
+      newAlbum.artist = artist;
     } else {
-      newAlbum.artistId = null;
+      newAlbum.artist = null;
     }
 
-    this.db.albums.push(newAlbum);
+    await this.albums.save(newAlbum);
     return newAlbum;
   }
 
-  update({ id, body }: { id: string; body: AlbumDto }): Album {
-    const album = this.getUnique(id);
+  async update({ id, body }: { id: string; body: AlbumDto }) {
+    const album = await this.getUnique(id);
     if (body.artistId) {
-      this.artistService.getUnique(body.artistId, {
+      const artist = await this.artistService.getUnique(body.artistId, {
         statusCode: 422,
         httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
       });
+      album.artist = artist;
     }
-    Object.keys(body).forEach((key) => {
-      if (body[key]) {
-        album[key] = body[key];
-      }
-    });
 
+    album.name = body.name;
+    album.year = body.year;
+
+    this.albums.save(album);
     return album;
   }
 
-  delete(id: string): void {
-    this.getUnique(id);
-    this.db.albums = this.db.albums.filter((album) => album.id !== id);
-    this.trackService.setAlbumIdNull(id);
-    this.db.favorites.albums = this.db.favorites.albums.filter(
-      (albumId) => albumId !== id,
-    );
-  }
-
-  setArtistIdNull(artistId: string): void {
-    this.db.albums = this.db.albums.map((item) =>
-      item.artistId === artistId ? { ...item, artistId: null } : item,
-    );
+  async delete(id: string) {
+    await this.getUnique(id);
+    await this.albums.delete({ id });
   }
 }

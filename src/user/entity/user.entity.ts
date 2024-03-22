@@ -1,16 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  VersionColumn,
+} from 'typeorm';
 
 @Entity()
-export class UserResponse {
+export class User {
   @ApiProperty({
     format: 'uui4',
   })
-  @PrimaryColumn({
-    type: 'uuid',
-    nullable: false,
-    unique: true,
-  })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @ApiProperty({ default: 'loginName' })
@@ -22,24 +25,15 @@ export class UserResponse {
   login: string;
 
   @ApiProperty({ default: 1 })
-  @Column({
-    type: 'int',
-    nullable: false,
-  })
+  @VersionColumn()
   version: number;
 
   @ApiProperty()
-  @Column({
-    type: 'timestamp with time zone',
-    nullable: false,
-  })
+  @CreateDateColumn()
   createdAt: Date;
 
   @ApiProperty()
-  @Column({
-    type: 'timestamp with time zone',
-    nullable: false,
-  })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   @Column({

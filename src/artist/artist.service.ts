@@ -7,9 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
-import { DbService } from 'src/db/db.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
 import { ArtistDto } from './dto/artist.dto';
@@ -20,8 +18,6 @@ export class ArtistService {
   constructor(
     @InjectRepository(Artist)
     private artists: Repository<Artist>,
-    @Inject(forwardRef(() => DbService))
-    private db: DbService,
     @Inject(forwardRef(() => AlbumService))
     private albumService: AlbumService,
     @Inject(forwardRef(() => TrackService))
@@ -55,7 +51,6 @@ export class ArtistService {
 
   async create(artist: ArtistDto) {
     const newArtist = new Artist();
-    newArtist.id = uuidv4();
     newArtist.name = artist.name;
     newArtist.grammy = artist.grammy;
 
@@ -74,11 +69,5 @@ export class ArtistService {
   async delete(id: string) {
     await this.getUnique(id);
     this.artists.delete(id);
-
-    this.albumService.setArtistIdNull(id);
-    this.trackService.setArtistIdNull(id);
-    this.db.favorites.artists = this.db.favorites.artists.filter(
-      (artistId) => artistId !== id,
-    );
   }
 }
