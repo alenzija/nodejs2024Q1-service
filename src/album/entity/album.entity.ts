@@ -4,7 +4,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -29,11 +29,15 @@ export class Album {
   year: number;
 
   @ApiPropertyOptional({
+    name: 'artistId',
     type: 'string',
     nullable: true,
     format: 'uui4',
   })
-  @OneToOne(() => Artist, { cascade: true })
+  @ManyToOne(() => Artist, {
+    cascade: ['update'],
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   artist: Artist; // refers to Artist
 }

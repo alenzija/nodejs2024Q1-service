@@ -5,7 +5,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -30,7 +30,10 @@ export class Track {
     nullable: true,
     format: 'uui4',
   })
-  @OneToOne(() => Artist, { cascade: true })
+  @ManyToOne(() => Artist, {
+    cascade: ['update'],
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   artist: Artist;
 
@@ -38,7 +41,7 @@ export class Track {
     nullable: true,
     format: 'uui4',
   })
-  @OneToOne(() => Album, { cascade: true })
+  @ManyToOne(() => Album)
   @JoinColumn()
   album: Album;
 

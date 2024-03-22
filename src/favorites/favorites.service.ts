@@ -55,6 +55,7 @@ export class FavoritesService {
       albumId: track.album ? track.album.id : null,
       album: undefined,
     }));
+    favorite.artists = favorite.artists || [];
     return favorite;
   }
 

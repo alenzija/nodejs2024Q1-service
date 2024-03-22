@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Album } from 'src/album/entity/album.entity';
+import { Track } from 'src/track/entity/track.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Artist {
@@ -26,4 +28,10 @@ export class Artist {
     nullable: false,
   })
   grammy: boolean;
+
+  @OneToMany(() => Track, (track) => track.artist)
+  track: Track;
+
+  @OneToMany(() => Album, (album) => album.artist)
+  album: Album;
 }
