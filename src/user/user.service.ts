@@ -4,26 +4,24 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { UserResponse } from './entity/userResponse.entity';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { CreateUserDto } from './dto/createUser.dto';
-import { InjectModel } from '@nestjs/sequelize';
-import { User } from './user.model';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User)
-    private users: typeof User,
+    @InjectRepository(UserResponse)
+    private users: Repository<UserResponse>,
   ) {}
 
-  transformToResponseUser(user: User | UserResponse): UserResponse {
-    const responseUser = 'dataValues' in user ? user.dataValues : user;
-
+  transformToResponseUser(user: UserResponse) {
     return {
-      ...responseUser,
+      ...user,
       password: undefined,
       createdAt: +new Date(user.createdAt),
       updatedAt: +new Date(user.updatedAt),
@@ -31,11 +29,11 @@ export class UserService {
   }
 
   async getAll() {
-    return await this.users.findAll();
+    return await this.users.find();
   }
 
   async getById(id: string) {
-    const user = await this.users.findOne({ where: { id } });
+    const user = await this.users.findOneBy({ id });
     if (!user) {
       throw new HttpException(
         {
@@ -49,7 +47,7 @@ export class UserService {
   }
 
   async getByLogin(login: string) {
-    const user = await this.users.findOne({ where: { login } });
+    const user = await this.users.findOneBy({ login });
     return user;
   }
 
@@ -62,14 +60,15 @@ export class UserService {
       });
     }
     const id = uuidv4();
-    const newUser = {
-      id,
-      ...user,
-      version: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    await this.users.create(newUser);
+    const newUser = new UserResponse();
+    newUser.id = id;
+    newUser.login = user.login;
+    newUser.password = user.password;
+    newUser.version = 1;
+    newUser.createdAt = new Date();
+    newUser.updatedAt = new Date();
+
+    await this.users.save(newUser);
     return this.transformToResponseUser(newUser);
   }
 
@@ -101,20 +100,16 @@ export class UserService {
     }
     const newUpdatedAt = new Date();
     const newVersion = user.version + 1;
-    await user.update({
-      ...user,
-      password: newPassword,
-      version: newVersion,
-      updatedAt: newUpdatedAt,
-    });
+    user.updatedAt = newUpdatedAt;
+    user.version = newVersion;
+    user.password = newPassword;
+    await this.users.save(user);
 
-    const updatedUser = await this.getById(id);
-
-    return this.transformToResponseUser(updatedUser);
+    return this.transformToResponseUser(user);
   }
 
   async delete(id: string) {
-    const user = await this.getById(id);
-    await user.destroy();
+    await this.getById(id);
+    await this.users.delete(id);
   }
 }

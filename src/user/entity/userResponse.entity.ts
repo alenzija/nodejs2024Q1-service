@@ -1,39 +1,50 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsDefined,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+@Entity()
 export class UserResponse {
   @ApiProperty({
     format: 'uui4',
   })
-  @IsDefined()
-  @IsUUID('4')
+  @PrimaryColumn({
+    type: 'uuid',
+    nullable: false,
+    unique: true,
+  })
   id: string;
 
   @ApiProperty({ default: 'loginName' })
-  @IsDefined()
-  @IsString()
+  @Column({
+    type: 'varchar',
+    nullable: false,
+    unique: true,
+  })
   login: string;
 
   @ApiProperty({ default: 1 })
-  @IsDefined()
-  @IsInt()
+  @Column({
+    type: 'int',
+    nullable: false,
+  })
   version: number;
 
   @ApiProperty()
-  @IsDefined()
-  createdAt: number | Date;
+  @Column({
+    type: 'timestamp with time zone',
+    nullable: false,
+  })
+  createdAt: Date;
 
   @ApiProperty()
-  @IsDefined()
-  updatedAt: number | Date;
+  @Column({
+    type: 'timestamp with time zone',
+    nullable: false,
+  })
+  updatedAt: Date;
 
-  @IsString()
-  @IsOptional()
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
   password?: string;
 }

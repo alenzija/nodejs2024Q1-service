@@ -1,23 +1,33 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDefined, IsString, IsUUID } from 'class-validator';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+@Entity()
 export class Artist {
-  @IsUUID('4')
   @ApiProperty({
     format: 'uuid',
   })
+  @PrimaryColumn({
+    type: 'uuid',
+    unique: true,
+    nullable: false,
+  })
   id: string;
 
-  @IsString()
-  @IsDefined()
   @ApiProperty({
     default: 'Freddie Mercury',
   })
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
   name: string;
 
-  @IsBoolean()
   @ApiProperty({
     default: true,
+  })
+  @Column({
+    type: 'boolean',
+    nullable: false,
   })
   grammy: boolean;
 }
