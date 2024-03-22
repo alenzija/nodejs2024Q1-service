@@ -41,7 +41,10 @@ export class Track {
     nullable: true,
     format: 'uui4',
   })
-  @ManyToOne(() => Album)
+  @ManyToOne(() => Album, {
+    cascade: ['update'],
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   album: Album;
 

@@ -1,12 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Artist } from 'src/artist/entity/artist.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+import { Artist } from 'src/artist/entity/artist.entity';
+import { Track } from 'src/track/entity/track.entity';
 
 @Entity()
 export class Album {
@@ -40,4 +43,7 @@ export class Album {
   })
   @JoinColumn()
   artist: Artist; // refers to Artist
+
+  @OneToMany(() => Track, (track) => track.album)
+  track: Track;
 }

@@ -79,7 +79,11 @@ export class AlbumService {
     }
 
     await this.albums.save(newAlbum);
-    return newAlbum;
+    return {
+      ...newAlbum,
+      artistId: newAlbum.artist ? newAlbum.artist.id : null,
+      artist: undefined,
+    };
   }
 
   async update({ id, body }: { id: string; body: AlbumDto }) {
@@ -96,7 +100,11 @@ export class AlbumService {
     album.year = body.year;
 
     this.albums.save(album);
-    return album;
+    return {
+      ...album,
+      artistId: album.artist ? album.artist.id : null,
+      artist: undefined,
+    };
   }
 
   async delete(id: string) {
