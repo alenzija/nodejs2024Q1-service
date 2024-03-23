@@ -27,7 +27,9 @@ export class Track {
   name: string;
 
   @ApiPropertyOptional({
+    name: 'artistId',
     nullable: true,
+    type: 'string',
     format: 'uui4',
   })
   @ManyToOne(() => Artist, {
@@ -38,7 +40,9 @@ export class Track {
   artist: Artist;
 
   @ApiPropertyOptional({
+    name: 'albumId',
     nullable: true,
+    type: 'string',
     format: 'uui4',
   })
   @ManyToOne(() => Album, {
