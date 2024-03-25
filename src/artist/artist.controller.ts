@@ -38,7 +38,7 @@ export class ArtistController {
     type: [Artist],
   })
   async getAll(): Promise<Artist[]> {
-    return this.artistService.getAll();
+    return await this.artistService.getAll();
   }
 
   @Get(':uuid')
@@ -63,7 +63,7 @@ export class ArtistController {
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<Artist> {
-    return this.artistService.getUnique(uuid);
+    return await this.artistService.getUnique(uuid);
   }
 
   @Post()
@@ -86,7 +86,7 @@ export class ArtistController {
     @Body(new ValidationPipe())
     artistDto: ArtistDto,
   ) {
-    return this.artistService.create(artistDto);
+    return await this.artistService.create(artistDto);
   }
 
   @Put(':uuid')
@@ -116,7 +116,7 @@ export class ArtistController {
     @Body(new ValidationPipe())
     artistDto: ArtistDto,
   ) {
-    return this.artistService.update({ id: uuid, body: artistDto });
+    return await this.artistService.update({ id: uuid, body: artistDto });
   }
 
   @Delete(':uuid')
@@ -141,6 +141,6 @@ export class ArtistController {
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<void> {
-    return this.artistService.delete(uuid);
+    return await this.artistService.delete(uuid);
   }
 }

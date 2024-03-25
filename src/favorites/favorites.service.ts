@@ -5,17 +5,20 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 import { AlbumService } from 'src/album/album.service';
 import { ArtistService } from 'src/artist/artist.service';
-import { DbService } from 'src/db/db.service';
 import { TrackService } from 'src/track/track.service';
-import { FavoritesResponse } from './entity/favoritesResponse.entity';
+
+import { Favorites } from './entity/favorites.entity';
 
 @Injectable()
 export class FavoritesService {
   constructor(
-    @Inject(forwardRef(() => DbService))
-    private db: DbService,
+    @InjectRepository(Favorites)
+    private favorites: Repository<Favorites>,
     @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
     @Inject(forwardRef(() => TrackService))
@@ -24,22 +27,49 @@ export class FavoritesService {
     private albumService: AlbumService,
   ) {}
 
-  getAll(): FavoritesResponse {
+  async getOrCreateFavorite() {
+    const favorites = await this.favorites.find({
+      relations: [
+        'artists',
+        'albums',
+        'albums.artist',
+        'tracks',
+        'tracks.artist',
+        'tracks.album',
+      ],
+    });
+    let favorite = favorites[0];
+    if (!favorite) {
+      favorite = new Favorites();
+      await this.favorites.save(favorite);
+    }
+    favorite.albums = (favorite.albums || []).map((album) => ({
+      ...album,
+      artistId: album.artist ? album.artist.id : null,
+      artist: undefined,
+    }));
+    favorite.tracks = (favorite.tracks || []).map((track) => ({
+      ...track,
+      artistId: track.artist ? track.artist.id : null,
+      artist: undefined,
+      albumId: track.album ? track.album.id : null,
+      album: undefined,
+    }));
+    favorite.artists = favorite.artists || [];
+    return favorite;
+  }
+
+  async getAll() {
+    const favorite = await this.getOrCreateFavorite();
     return {
-      artists: this.db.favorites.artists.map((artistId) =>
-        this.artistService.getUnique(artistId),
-      ),
-      albums: this.db.favorites.albums.map((albumId) =>
-        this.albumService.getUnique(albumId),
-      ),
-      tracks: this.db.favorites.tracks.map((trackId) =>
-        this.trackService.getUnique(trackId),
-      ),
+      tracks: favorite.tracks,
+      artists: favorite.artists,
+      albums: favorite.albums,
     };
   }
 
-  hasTrackId(id: string) {
-    if (!this.db.favorites.tracks.includes(id)) {
+  hasTrackId(favorite: Favorites, id: string) {
+    if (!favorite.tracks.some((track) => track.id === id)) {
       throw new HttpException(
         {
           statusCode: 422,
@@ -51,8 +81,8 @@ export class FavoritesService {
     return true;
   }
 
-  hasArtistId(id: string) {
-    if (!this.db.favorites.artists.includes(id)) {
+  hasArtistId(favorite: Favorites, id: string) {
+    if (!favorite.artists.some((artist) => artist.id === id)) {
       throw new HttpException(
         {
           statusCode: 422,
@@ -64,8 +94,8 @@ export class FavoritesService {
     return true;
   }
 
-  hasAlbumId(id: string) {
-    if (!this.db.favorites.albums.includes(id)) {
+  hasAlbumId(favorite: Favorites, id: string) {
+    if (!favorite.albums.some((album) => album.id === id)) {
       throw new HttpException(
         {
           statusCode: 422,
@@ -77,48 +107,60 @@ export class FavoritesService {
     return true;
   }
 
-  addTrack(id: string): void {
-    this.trackService.getUnique(id, {
+  async addTrack(id: string) {
+    const track = await this.trackService.getUnique(id, {
       statusCode: 422,
       httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
     });
-    this.db.favorites.tracks.push(id);
+    const favorite = await this.getOrCreateFavorite();
+    favorite.tracks = [...(favorite.tracks || []), track];
+
+    await this.favorites.save(favorite);
   }
 
-  deleteTrack(id: string): void {
-    this.hasTrackId(id);
-    this.db.favorites.tracks = this.db.favorites.tracks.filter(
-      (trackId) => trackId !== id,
-    );
+  async deleteTrack(id: string) {
+    const favorite = await this.getOrCreateFavorite();
+    this.hasTrackId(favorite, id);
+    favorite.tracks = favorite.tracks.filter((track) => track.id !== id);
+
+    await this.favorites.save(favorite);
   }
 
-  addAlbum(id: string): void {
-    this.albumService.getUnique(id, {
+  async addAlbum(id: string) {
+    const album = await this.albumService.getUnique(id, {
       statusCode: 422,
       httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
     });
-    this.db.favorites.albums.push(id);
+    const favorite = await this.getOrCreateFavorite();
+    favorite.albums = [...(favorite.albums || []), album];
+
+    await this.favorites.save(favorite);
   }
 
-  deleteAlbum(id: string): void {
-    this.hasAlbumId(id);
-    this.db.favorites.albums = this.db.favorites.albums.filter(
-      (albumId) => albumId !== id,
-    );
+  async deleteAlbum(id: string) {
+    const favorite = await this.getOrCreateFavorite();
+    this.hasAlbumId(favorite, id);
+    favorite.albums = favorite.albums.filter((album) => album.id !== id);
+
+    await this.favorites.save(favorite);
   }
 
-  addArtist(id: string): void {
-    this.artistService.getUnique(id, {
+  async addArtist(id: string) {
+    const artist = await this.artistService.getUnique(id, {
       statusCode: 422,
       httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
     });
-    this.db.favorites.artists.push(id);
+    const favorite = await this.getOrCreateFavorite();
+    favorite.artists = [...(favorite.artists || []), artist];
+
+    await this.favorites.save(favorite);
   }
 
-  deleteArtist(id: string): void {
-    this.hasArtistId(id);
-    this.db.favorites.artists = this.db.favorites.artists.filter(
-      (artistId) => artistId !== id,
-    );
+  async deleteArtist(id: string) {
+    const favorite = await this.getOrCreateFavorite();
+    this.hasArtistId(favorite, id);
+    favorite.artists = favorite.artists.filter((artist) => artist.id !== id);
+
+    await this.favorites.save(favorite);
   }
 }

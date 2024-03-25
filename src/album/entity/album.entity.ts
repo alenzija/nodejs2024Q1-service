@@ -1,27 +1,49 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDefined, IsInt, IsString, IsUUID } from 'class-validator';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
+import { Artist } from 'src/artist/entity/artist.entity';
+import { Track } from 'src/track/entity/track.entity';
+
+@Entity()
 export class Album {
   @ApiProperty({ format: 'uui4' })
-  @IsUUID('4')
-  @IsDefined()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @ApiProperty({ default: 'Innuendo' })
-  @IsString()
-  @IsDefined()
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
   name: string;
 
   @ApiProperty({ default: 2024 })
-  @IsInt()
-  @IsDefined()
+  @Column({
+    type: 'int',
+    nullable: false,
+  })
   year: number;
 
   @ApiPropertyOptional({
+    name: 'artistId',
     type: 'string',
     nullable: true,
     format: 'uui4',
   })
-  @IsString()
-  artistId: string | null; // refers to Artist
+  @ManyToOne(() => Artist, {
+    cascade: ['update'],
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn()
+  artist: Artist; // refers to Artist
+
+  @OneToMany(() => Track, (track) => track.album)
+  track: Track;
 }

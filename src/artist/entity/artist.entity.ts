@@ -1,23 +1,37 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDefined, IsString, IsUUID } from 'class-validator';
+import { Album } from 'src/album/entity/album.entity';
+import { Track } from 'src/track/entity/track.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
+@Entity()
 export class Artist {
-  @IsUUID('4')
   @ApiProperty({
     format: 'uuid',
   })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @IsString()
-  @IsDefined()
   @ApiProperty({
     default: 'Freddie Mercury',
   })
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
   name: string;
 
-  @IsBoolean()
   @ApiProperty({
     default: true,
   })
+  @Column({
+    type: 'boolean',
+    nullable: false,
+  })
   grammy: boolean;
+
+  @OneToMany(() => Track, (track) => track.artist)
+  track: Track;
+
+  @OneToMany(() => Album, (album) => album.artist)
+  album: Album;
 }

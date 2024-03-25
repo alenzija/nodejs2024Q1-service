@@ -5,37 +5,37 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { Artist } from './entity/artist.entity';
-import { DbService } from 'src/db/db.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
 import { ArtistDto } from './dto/artist.dto';
+import { Artist } from './entity/artist.entity';
 
 @Injectable()
 export class ArtistService {
   constructor(
-    @Inject(forwardRef(() => DbService))
-    private db: DbService,
+    @InjectRepository(Artist)
+    private artists: Repository<Artist>,
     @Inject(forwardRef(() => AlbumService))
     private albumService: AlbumService,
     @Inject(forwardRef(() => TrackService))
     private trackService: TrackService,
   ) {}
 
-  getAll() {
-    return this.db.artists;
+  async getAll() {
+    return await this.artists.find();
   }
 
-  getUnique(
+  async getUnique(
     id: string,
     error: { statusCode: number; httpStatus: HttpStatus } = {
       statusCode: 404,
       httpStatus: HttpStatus.NOT_FOUND,
     },
-  ): Artist {
-    const artist = this.db.artists.find((artist) => artist.id === id);
+  ) {
+    const artist = await this.artists.findOneBy({ id });
     if (!artist) {
       const { statusCode, httpStatus } = error;
       throw new HttpException(
@@ -49,31 +49,25 @@ export class ArtistService {
     return artist;
   }
 
-  create(artist: ArtistDto): Artist {
-    const newArtist = {
-      id: uuidv4(),
-      ...artist,
-    };
-    this.db.artists.push(newArtist);
+  async create(artist: ArtistDto) {
+    const newArtist = new Artist();
+    newArtist.name = artist.name;
+    newArtist.grammy = artist.grammy;
+
+    await this.artists.save(newArtist);
     return newArtist;
   }
 
-  update({ id, body }: { id: string; body: ArtistDto }): Artist {
-    const artist = this.getUnique(id);
-    Object.keys(body).forEach((key) => {
-      artist[key] = body[key];
-    });
-
+  async update({ id, body }: { id: string; body: ArtistDto }) {
+    const artist = await this.getUnique(id);
+    artist.name = body.name;
+    artist.grammy = body.grammy;
+    await this.artists.save(artist);
     return artist;
   }
 
-  delete(id: string): void {
-    this.getUnique(id);
-    this.db.artists = this.db.artists.filter((artist) => artist.id !== id);
-    this.albumService.setArtistIdNull(id);
-    this.trackService.setArtistIdNull(id);
-    this.db.favorites.artists = this.db.favorites.artists.filter(
-      (artisId) => artisId !== id,
-    );
+  async delete(id: string) {
+    await this.getUnique(id);
+    this.artists.delete(id);
   }
 }

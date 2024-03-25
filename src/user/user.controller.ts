@@ -24,7 +24,7 @@ import { UserService } from './user.service';
 
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
-import { UserResponse } from './entity/userResponse.entity';
+import { User } from './entity/user.entity';
 
 @ApiTags('User controller')
 @Controller('user')
@@ -39,11 +39,11 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Gets all users',
-    type: [UserResponse],
+    type: [User],
     content: { 'application/json': {} },
   })
-  async getAll(): Promise<UserResponse[]> {
-    return this.userService.getAll();
+  async getAll() {
+    return await this.userService.getAll();
   }
 
   @Get(':uuid')
@@ -53,7 +53,7 @@ export class UserController {
   })
   @ApiResponse({
     status: 200,
-    type: UserResponse,
+    type: User,
     description: 'Successful operation',
     content: { 'application/json': {} },
   })
@@ -68,8 +68,8 @@ export class UserController {
   async getById(
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
-  ): Promise<UserResponse | null> {
-    return this.userService.getById(uuid);
+  ) {
+    return await this.userService.getById(uuid);
   }
 
   @Post()
@@ -80,7 +80,7 @@ export class UserController {
   @ApiBody({ type: CreateUserDto, required: true })
   @ApiResponse({
     status: 201,
-    type: UserResponse,
+    type: User,
     description: 'The user has been created.',
     content: { 'application/json': {} },
   })
@@ -92,7 +92,7 @@ export class UserController {
     @Body(new ValidationPipe())
     createUserDto: CreateUserDto,
   ) {
-    return this.userService.create(createUserDto);
+    return await this.userService.create(createUserDto);
   }
 
   @Put(':uuid')
@@ -105,7 +105,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'The user has been updated.',
-    type: UserResponse,
+    type: User,
     content: { 'application/json': {} },
   })
   @ApiBadRequestResponse({
@@ -126,7 +126,7 @@ export class UserController {
     @Body(new ValidationPipe())
     updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.update({ id: uuid, body: updateUserDto });
+    return await this.userService.update({ id: uuid, body: updateUserDto });
   }
 
   @Delete(':uuid')
@@ -151,6 +151,6 @@ export class UserController {
     @Param('uuid', new ParseUUIDPipe({ version: '4' }))
     uuid: string,
   ): Promise<void> {
-    return this.userService.delete(uuid);
+    return await this.userService.delete(uuid);
   }
 }

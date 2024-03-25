@@ -2,34 +2,37 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
-  forwardRef,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { DbService } from 'src/db/db.service';
-import { UserResponse } from './entity/userResponse.entity';
+import { User } from './entity/user.entity';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { CreateUserDto } from './dto/createUser.dto';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(forwardRef(() => DbService))
-    private db: DbService,
+    @InjectRepository(User)
+    private users: Repository<User>,
   ) {}
 
-  transformToResponseUser(user: UserResponse): UserResponse {
-    return { ...user, password: undefined };
+  transformToResponseUser(user: User) {
+    return {
+      ...user,
+      password: undefined,
+      createdAt: +new Date(user.createdAt),
+      updatedAt: +new Date(user.updatedAt),
+    };
   }
 
-  getAll(): UserResponse[] {
-    return this.db.users.map(this.transformToResponseUser);
+  async getAll() {
+    return await this.users.find();
   }
 
-  getById(id: string): UserResponse {
-    const user = this.db.users.find((user) => user.id === id);
+  async getById(id: string) {
+    const user = await this.users.findOneBy({ id });
     if (!user) {
       throw new HttpException(
         {
@@ -42,39 +45,37 @@ export class UserService {
     return user;
   }
 
-  getByLogin(login: string): UserResponse {
-    const user = this.db.users.find((user) => user.login === login);
+  async getByLogin(login: string) {
+    const user = await this.users.findOneBy({ login });
     return user;
   }
 
-  create(user: CreateUserDto): UserResponse {
-    const currentUser = this.getByLogin(user.login);
+  async create(user: CreateUserDto) {
+    const currentUser = await this.getByLogin(user.login);
     if (currentUser) {
       throw new BadRequestException({
         statusCode: 400,
         message: 'User with this login is already exist',
       });
     }
-    const newUser = {
-      id: uuidv4(),
-      ...user,
-      version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-    this.db.users.push(newUser);
 
+    const newUser = new User();
+
+    newUser.login = user.login;
+    newUser.password = user.password;
+
+    await this.users.save(newUser);
     return this.transformToResponseUser(newUser);
   }
 
-  update({
+  async update({
     id,
     body: { oldPassword, newPassword },
   }: {
     id: string;
     body: UpdateUserDto;
-  }): UserResponse {
-    const user = this.getById(id);
+  }) {
+    const user = await this.getById(id);
     if (user.password !== oldPassword) {
       throw new HttpException(
         {
@@ -93,16 +94,14 @@ export class UserService {
         HttpStatus.FORBIDDEN,
       );
     }
-
     user.password = newPassword;
-    user.version = user.version + 1;
-    user.updatedAt = Date.now();
+    await this.users.save(user);
 
     return this.transformToResponseUser(user);
   }
 
-  delete(id: string): void {
-    this.getById(id);
-    this.db.users = this.db.users.filter((user) => user.id !== id);
+  async delete(id: string) {
+    await this.getById(id);
+    await this.users.delete(id);
   }
 }
