@@ -11,25 +11,35 @@
 git clone https://github.com/alenzija/nodejs2024Q1-service.git
 ```
 
-## Installing NPM modules
+## Running application
+
+```
+docker-compose up --build
+```
+
+## Running only database
+
+```
+docker-compose up -d db-data
+```
+
+## Running only server
+
+```
+docker-compose up -d server
+```
+
+After starting the app on port (4000 as default) you can open in your browser OpenAPI documentation by typing http://localhost:4000/yaml-docs/ or http://localhost:4000/runtime-docs/. For more information about OpenAPI/Swagger please visit https://swagger.io/.
+
+## Testing
+
+## Installing npm modules
 
 ```
 npm install
 ```
 
-## Running application
-
-```
-npm start
-```
-
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
-
-## Testing
-
-After application running open new terminal and enter:
+After installing npm modules open new terminal and enter:
 
 To run all tests without authorization
 
@@ -56,6 +66,12 @@ npm run test:auth -- <path to suite>
 ```
 
 ### Auto-fix and format
+
+## Installing npm modules
+
+```
+npm install
+```
 
 ```
 npm run lint

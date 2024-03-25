@@ -2,6 +2,8 @@ services:
   server:
     build:
       context: .
+    ports:
+      - 4000:4000
     environment:
       NODE_ENV: development
       POSTGRES_HOST: db
@@ -9,10 +11,8 @@ services:
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: postgres
-    ports:
-      - 4000:4000
-    # volumes:
-    #   - .:/app
+    volumes:
+      - ./src:/app/src
     depends_on:
       db:
         condition: service_healthy
